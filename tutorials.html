@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Tutorials</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #D2E2DF;
+            color: #eee;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            background-color: #4D605E;
+            color: #eee;
+        }
+
+        .search-bar {
+            margin: 20px auto;
+            width: 50%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .search-bar input {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #4D605E;
+            border-radius: 54px;
+            outline: none;
+        }
+
+        .search-bar button {
+            padding: 10px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #4D605E;
+            border: none;
+            border-radius: 54px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .search-bar button:hover {
+            background-color: #3B4C47;
+        }
+
+        .videos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .video-card {
+            background-color: #EEFAF8;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .video-card iframe {
+            width: 100%;
+            height: 200px;
+            border-radius: 10px;
+        }
+
+        .video-card h3 {
+            margin: 10px 0;
+            color: #4D605E;
+        }
+
+        .video-card p {
+            font-size: 14px;
+            color: #4D605E;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Online Tutorials</h1>
+        <p>Learn at your own pace with handpicked videos from YouTube</p>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" id="search" placeholder="Search for a video..." aria-label="Search for a video">
+        <button onclick="searchVideos()" aria-label="Search button">Search</button>
+    </div>
+
+    <div class="videos" id="videos"></div>
+
+    <script>
+        // Video Data with YouTube URLs
+        const videos = [
+            {
+                title: "Introduction to Data Structures",
+                description: "A basic introduction to data structures and their importance.",
+                url: "https://www.youtube.com/embed/dQw4w9WgXcQ", // YouTube Embed URL
+                uploadDate: "2024-12-01"
+            },
+            {
+                title: "Sorting Algorithms Explained",
+                description: "Learn about sorting algorithms with detailed explanations.",
+                url: "https://www.youtube.com/embed/2OpFcmU-94g", // YouTube Embed URL
+                uploadDate: "2024-12-03"
+            },
+            {
+                title: "Understanding Recursion",
+                description: "An easy-to-follow explanation of recursion in programming.",
+                url: "https://www.youtube.com/embed/hY7m5jjJ9mM", // YouTube Embed URL
+                uploadDate: "2024-12-05"
+            },
+            {
+                title: "Introduction to Data Structures",
+                description: "A basic introduction to data structures and their importance.",
+                url: "https://www.youtube.com/embed/dQw4w9WgXcQ", // YouTube Embed URL
+                uploadDate: "2024-12-01"
+            },
+            {
+                title: "Sorting Algorithms Explained",
+                description: "Learn about sorting algorithms with detailed explanations.",
+                url: "https://www.youtube.com/embed/2OpFcmU-94g", // YouTube Embed URL
+                uploadDate: "2024-12-03"
+            },
+            {
+                title: "Understanding Recursion",
+                description: "An easy-to-follow explanation of recursion in programming.",
+                url: "https://www.youtube.com/embed/hY7m5jjJ9mM", // YouTube Embed URL
+                uploadDate: "2024-12-05"
+            },
+            {
+                title: "Introduction to Data Structures",
+                description: "A basic introduction to data structures and their importance.",
+                url: "https://www.youtube.com/embed/dQw4w9WgXcQ", // YouTube Embed URL
+                uploadDate: "2024-12-01"
+            },
+            {
+                title: "Sorting Algorithms Explained",
+                description: "Learn about sorting algorithms with detailed explanations.",
+                url: "https://www.youtube.com/embed/2OpFcmU-94g", // YouTube Embed URL
+                uploadDate: "2024-12-03"
+            },
+            {
+                title: "Understanding Recursion",
+                description: "An easy-to-follow explanation of recursion in programming.",
+                url: "https://www.youtube.com/embed/hY7m5jjJ9mM", // YouTube Embed URL
+                uploadDate: "2024-12-05"
+            },
+            {
+                title: "Introduction to Data Structures",
+                description: "A basic introduction to data structures and their importance.",
+                url: "https://www.youtube.com/embed/dQw4w9WgXcQ", // YouTube Embed URL
+                uploadDate: "2024-12-01"
+            },
+            {
+                title: "Sorting Algorithms Explained",
+                description: "Learn about sorting algorithms with detailed explanations.",
+                url: "https://www.youtube.com/embed/2OpFcmU-94g", // YouTube Embed URL
+                uploadDate: "2024-12-03"
+            },
+            {
+                title: "Understanding Recursion",
+                description: "An easy-to-follow explanation of recursion in programming.",
+                url: "https://www.youtube.com/embed/hY7m5jjJ9mM", // YouTube Embed URL
+                uploadDate: "2024-12-05"
+            },
+            {
+                title: "Introduction to Data Structures",
+                description: "A basic introduction to data structures and their importance.",
+                url: "https://www.youtube.com/embed/dQw4w9WgXcQ", // YouTube Embed URL
+                uploadDate: "2024-12-01"
+            },
+            {
+                title: "Sorting Algorithms Explained",
+                description: "Learn about sorting algorithms with detailed explanations.",
+                url: "https://www.youtube.com/embed/2OpFcmU-94g", // YouTube Embed URL
+                uploadDate: "2024-12-03"
+            },
+            {
+                title: "Understanding Recursion",
+                description: "An easy-to-follow explanation of recursion in programming.",
+                url: "https://www.youtube.com/embed/hY7m5jjJ9mM", // YouTube Embed URL
+                uploadDate: "2024-12-05"
+            },
+            {
+                title: "Introduction to Data Structures",
+                description: "A basic introduction to data structures and their importance.",
+                url: "https://www.youtube.com/embed/dQw4w9WgXcQ", // YouTube Embed URL
+                uploadDate: "2024-12-01"
+            },
+            {
+                title: "Sorting Algorithms Explained",
+                description: "Learn about sorting algorithms with detailed explanations.",
+                url: "https://www.youtube.com/embed/2OpFcmU-94g", // YouTube Embed URL
+                uploadDate: "2024-12-03"
+            },
+            {
+                title: "Understanding Recursion",
+                description: "An easy-to-follow explanation of recursion in programming.",
+                url: "https://www.youtube.com/embed/hY7m5jjJ9mM", // YouTube Embed URL
+                uploadDate: "2024-12-05"
+            },
+            {
+                title: "Introduction to Data Structures",
+                description: "A basic introduction to data structures and their importance.",
+                url: "https://www.youtube.com/embed/dQw4w9WgXcQ", // YouTube Embed URL
+                uploadDate: "2024-12-01"
+            },
+            {
+                title: "Sorting Algorithms Explained",
+                description: "Learn about sorting algorithms with detailed explanations.",
+                url: "https://www.youtube.com/embed/2OpFcmU-94g", // YouTube Embed URL
+                uploadDate: "2024-12-03"
+            },
+            {
+                title: "Understanding Recursion",
+                description: "An easy-to-follow explanation of recursion in programming.",
+                url: "https://www.youtube.com/embed/hY7m5jjJ9mM", // YouTube Embed URL
+                uploadDate: "2024-12-05"
+            },
+            {
+                title: "Introduction to Data Structures",
+                description: "A basic introduction to data structures and their importance.",
+                url: "https://www.youtube.com/embed/dQw4w9WgXcQ", // YouTube Embed URL
+                uploadDate: "2024-12-01"
+            },
+            {
+                title: "Sorting Algorithms Explained",
+                description: "Learn about sorting algorithms with detailed explanations.",
+                url: "https://www.youtube.com/embed/2OpFcmU-94g", // YouTube Embed URL
+                uploadDate: "2024-12-03"
+            },
+            {
+                title: "Understanding Recursion",
+                description: "An easy-to-follow explanation of recursion in programming.",
+                url: "https://www.youtube.com/embed/hY7m5jjJ9mM", // YouTube Embed URL
+                uploadDate: "2024-12-05"
+            },
+            // Add more videos as needed
+        ];
+
+        // Shuffle function to randomize the order of videos
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]]; // Swap elements
+            }
+        }
+
+        // Display Videos
+        const videoContainer = document.getElementById('videos');
+        function displayVideos(videoList) {
+            videoContainer.innerHTML = '';
+            if (videoList.length === 0) {
+                videoContainer.innerHTML = '<p>No videos found. Try a different search.</p>';
+            } else {
+                videoList.forEach(video => {
+                    const videoCard = document.createElement('div');
+                    videoCard.classList.add('video-card');
+
+                    videoCard.innerHTML = `
+                        <iframe src="${video.url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        <h3>${video.title}</h3>
+                        <p>${video.description}</p>
+                        <p><small>Uploaded on: ${video.uploadDate}</small></p>
+                    `;
+
+                    videoContainer.appendChild(videoCard);
+                });
+            }
+        }
+
+        // Shuffle and Select 20 Random Videos
+        function getRandomVideos() {
+            shuffleArray(videos);
+            return videos.slice(0, 20); // Select the first 20 videos
+        }
+
+        // Initial Display
+        displayVideos(getRandomVideos());
+
+        // Search Functionality
+        function searchVideos() {
+            const searchText = document.getElementById('search').value.toLowerCase();
+            const filteredVideos = videos.filter(video => video.title.toLowerCase().includes(searchText));
+            displayVideos(filteredVideos);
+        }
+    </script>
+</body>
+</html>

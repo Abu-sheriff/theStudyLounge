@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoungeQuizzing</title>
+  <style>
+    /* General Styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #D2E2DF;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      color: #4D605E;
+      font-size: 2rem;
+    }
+
+    .quiz-container {
+      background-color: #EEFAF8;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .timer {
+      text-align: right;
+      font-size: 1.2rem;
+      color: red;
+      margin-bottom: 10px;
+    }
+
+    .question {
+      margin: 15px 0;
+    }
+
+    .options {
+      list-style: none;
+      padding: 0;
+    }
+
+    .options li {
+      margin: 10px 0;
+    }
+
+    .options input[type="radio"] {
+      margin-right: 10px;
+    }
+
+    /* Buttons */
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .prev-btn {
+      background-color: #D2E2DF;
+      color: #333;
+      display: none;
+    }
+
+    .next-btn {
+      background-color: #006400;
+      color: #fff;
+    }
+
+    .submit-btn {
+      background-color: #4D605E;
+      color: #fff;
+      display: none;
+    }
+
+    /* Question Navigation */
+    .question-navigation {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+      gap: 5px;
+      margin-top: 20px;
+    }
+
+    .question-navigation button {
+      background-color: #D2E2DF;
+      color: #333;
+      border: 1px solid #4D605E;
+      font-size: 1rem;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
+    .question-navigation button.answered {
+      background-color: #4D605E;
+      color: #fff;
+    }
+
+    /* Media Queries for Responsiveness */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .quiz-container {
+        padding: 15px;
+      }
+
+      button {
+        font-size: 0.95rem;
+        padding: 10px 16px;
+      }
+
+      .timer {
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .quiz-container {
+        padding: 10px;
+      }
+
+      .timer {
+        font-size: 0.9rem;
+      }
+
+      button {
+        font-size: 0.9rem;
+        padding: 8px 14px;
+      }
+
+      .question-navigation button {
+        font-size: 0.9rem;
+        padding: 6px 8px;
+      }
+    }
+
+    /* Pop-Up Modal Styling */
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      text-align: center;
+      z-index: 1000;
+      display: none;
+    }
+
+    .modal h2 {
+      color: #4D605E;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+
+    .modal button {
+      background-color: #006400;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .modal button:hover {
+      background-color: #004d00;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>LoungeQuizzing</h1>
+  </header>
+  <div class="quiz-container">
+    <div class="timer" id="timer">25:00</div>
+    <div class="question" id="question">Question will appear here</div>
+    <ul class="options" id="options"></ul>
+
+    <div class="buttons">
+      <button class="prev-btn" id="prev">Previous</button>
+      <button class="next-btn" id="next">Next</button>
+      <button class="submit-btn" id="submit">Submit</button>
+    </div>
+
+    <div class="question-navigation" id="questionNav"></div>
+  </div>
+  <div class="modal-overlay" id="modalOverlay"></div>
+  <div class="modal" id="quizModal">
+    <h2>Quiz Completed</h2>
+    <button id="viewScoreButton">View Score</button>
+  </div>
+
+  <script>
+    // Initialize quiz data
+    const allQuestions = [
+  { question: "What is computer programming?", options: ["A method to input data", "A set of instructions for a computer", "A hardware process", "A network protocol"], answer: 1 },
+  { question: "What is the primary goal of programming?", options: ["To solve a problem", "To create hardware", "To manage databases", "To learn machine code"], answer: 0 },
+  { question: "Which language is not mentioned as a high-level language in the document?", options: ["C", "C++", "Pascal", "Binary"], answer: 3 },
+  { question: "What is sequential programming?", options: ["Parallel execution of instructions", "A sequence of instructions executed in order", "A method to create algorithms", "A way to test programs"], answer: 1 },
+  { question: "What does the PDLC stand for?", options: ["Program Development Life Cycle", "Programming Debugging Life Cycle", "Program Design Logic Chart", "Program Data Life Cycle"], answer: 0 },
+  { question: "Which phase of PDLC involves writing code?", options: ["Designing", "Implementation", "Testing", "Planning"], answer: 1 },
+  { question: "Which tool is used for designing algorithms?", options: ["Pseudocode", "Assembler", "Debugger", "Compiler"], answer: 0 },
+  { question: "What does a flowchart represent?", options: ["Hardware design", "Program logic", "CPU architecture", "Data storage"], answer: 1 },
+  { question: "What is a decision table used for?", options: ["Displaying memory addresses", "Describing conditions and actions", "Storing binary data", "Optimizing loops"], answer: 1 },
+  { question: "What is the main feature of pseudocode?", options: ["It can be compiled", "It is written in plain English", "It uses only binary digits", "It requires syntax rules"], answer: 1 },
+  { question: "What type of error occurs when the program output is incorrect?", options: ["Syntax error", "Logical error", "Runtime error", "Compilation error"], answer: 1 },
+  { question: "Which testing is performed internally?", options: ["Beta testing", "Alpha testing", "Regression testing", "User testing"], answer: 1 },
+  { question: "What is the final phase of PDLC?", options: ["Debugging", "Deployment and Maintenance", "Implementation", "Designing"], answer: 1 },
+  { question: "What is a low-level language?", options: ["A human-readable programming language", "A language with no abstraction from hardware", "A language for high-performance computing", "A scripting language"], answer: 1 },
+  { question: "Which language is represented in binary form?", options: ["Assembly", "High-level", "Machine", "Python"], answer: 2 },
+  { question: "What is the purpose of an assembler?", options: ["Converts machine code to assembly", "Converts assembly code to machine code", "Executes high-level code", "Translates pseudocode"], answer: 1 },
+  { question: "Which is a feature of high-level languages?", options: ["Direct hardware access", "Command words reflecting everyday language", "Machine code compatibility", "Limited abstraction"], answer: 1 },
+  { question: "What is the CPU's primary function?", options: ["Data storage", "Executing stored program instructions", "Power supply management", "Data visualization"], answer: 1 },
+  { question: "What does the ALU in a CPU perform?", options: ["Arithmetic and logical operations", "Memory management", "Data input", "Power regulation"], answer: 0 },
+  { question: "What does the control unit of a CPU do?", options: ["Executes instructions", "Directs the system to execute instructions", "Stores data", "Manages memory"], answer: 1 },
+  { question: "What are registers used for in a CPU?", options: ["Permanent data storage", "Temporary storage for instructions or data", "Translating assembly code", "Generating power"], answer: 1 },
+  { question: "Which is the smallest unit of data in a computer?", options: ["Byte", "Bit", "Word", "Nibble"], answer: 1 },
+  { question: "How many bits are in a byte?", options: ["4", "8", "16", "32"], answer: 1 },
+  { question: "What is binary addition of 1 + 1?", options: ["1", "10", "11", "0"], answer: 1 },
+  { question: "What is the decimal equivalent of the binary number 1101?", options: ["13", "12", "14", "15"], answer: 0 },
+  { question: "What does the binary digit '1' represent?", options: ["Off state", "Low voltage", "On state", "No signal"], answer: 2 },
+  { question: "What is the most significant bit (MSB) in a binary number?", options: ["The rightmost digit", "The leftmost digit", "The smallest digit", "The middle digit"], answer: 1 },
+  { question: "What is the binary equivalent of the decimal number 9?", options: ["1001", "1010", "1100", "1110"], answer: 0 },
+  { question: "What is a truth table used for?", options: ["Analyzing logic circuits", "Testing CPU speed", "Designing memory chips", "Compiling high-level languages"], answer: 0 },
+  { question: "Which logic gate outputs 1 if all inputs are 1?", options: ["OR", "AND", "NOT", "NAND"], answer: 1 },
+  { question: "What is the Boolean expression for an OR gate?", options: ["Y = A + B", "Y = A * B", "Y = NOT A", "Y = A / B"], answer: 0 },
+  { question: "Which gate inverts its input?", options: ["AND", "OR", "NOT", "NAND"], answer: 2 },
+  { question: "What is the function of a combinational logic circuit?", options: ["Storing data", "Performing logical operations on inputs", "Executing sequential instructions", "Managing memory"], answer: 1 },
+  { question: "What is a pixel?", options: ["A type of CPU", "The smallest element in an image", "A data storage unit", "A memory address"], answer: 1 },
+  { question: "What does ASCII stand for?", options: ["American Standard Code for Information Interchange", "Advanced System for Computing and Information", "Automated Software Code Interpretation", "Application System Code Interface"], answer: 0 },
+  { question: "What is the standard sampling rate for MP3 audio?", options: ["22,050 Hz", "44,100 Hz", "48,000 Hz", "96,000 Hz"], answer: 1 },
+  { question: "Which file format is used for high-quality printing?", options: ["JPEG", "TIFF", "GIF", "PNG"], answer: 1 },
+  { question: "What does the Boolean operator '!=' mean?", options: ["Equal to", "Not equal to", "Less than", "Greater than"], answer: 1 },
+  { question: "What is the result of the binary multiplication 101 x 10?", options: ["1010", "101", "1001", "110"], answer: 0 },
+  { question: "What is a program counter (PC) used for?", options: ["Storing arithmetic results", "Holding the next instruction address", "Executing machine code", "Managing power supply"], answer: 1 },
+  { question: "What is the decimal equivalent of the binary number 1110?", options: ["13", "14", "15", "16"], answer: 1 },
+  { question: "What does the binary subtraction 10 - 1 result in?", options: ["0", "1", "10", "11"], answer: 1 },
+  { question: "What is the decimal value of 2^5?", options: ["16", "32", "64", "128"], answer: 1 },
+  { question: "What is the main feature of sequential execution?", options: ["Parallel execution", "Non-deterministic output", "Ordered execution of instructions", "Random instruction flow"], answer: 2 },
+  { question: "Which type of storage is volatile?", options: ["Hard disk", "RAM", "ROM", "CD-ROM"], answer: 1 },
+  { question: "What is a combinational logic circuit?", options: ["A circuit with memory", "A circuit that outputs based on current inputs only", "A circuit used for sequential execution", "A circuit used for data storage"], answer: 1 },
+  { question: "Which gate is a combination of AND and NOT gates?", options: ["OR", "NAND", "NOR", "EXOR"], answer: 1 },
+  { question: "What is the purpose of Boolean algebra in logic circuits?", options: ["To simplify circuit design", "To store data", "To execute machine instructions", "To encode data"], answer: 0 },
+  { question: "What does a truth table represent in digital circuits?", options: ["Input-output relationships", "CPU architecture", "Memory addresses", "Voltage levels"], answer: 0 },
+  { question: "Which number system is used in most digital systems?", options: ["Decimal", "Binary", "Octal", "Hexadecimal"], answer: 1 },
+  { question: "What is the function of the ALU in the CPU?", options: ["Stores instructions", "Performs arithmetic and logic operations", "Manages input/output devices", "Controls program execution"], answer: 1 },
+  { question: "What is the decimal equivalent of the binary number 10101?", options: ["19", "20", "21", "23"], answer: 2 },
+  { question: "What does a NOT gate do to its input?", options: ["Outputs the same value", "Inverts the input", "Outputs a constant 1", "Outputs a constant 0"], answer: 1 },
+  { question: "Which programming phase involves testing for errors?", options: ["Designing", "Coding", "Debugging", "Maintenance"], answer: 2 },
+  { question: "What is the Boolean expression for an AND gate?", options: ["Y = A + B", "Y = A * B", "Y = NOT A", "Y = A - B"], answer: 1 },
+  { question: "What is the role of registers in a CPU?", options: ["Execute instructions", "Provide temporary storage", "Store permanent data", "Manage input devices"], answer: 1 },
+  { question: "Which of the following is a volatile memory?", options: ["Hard disk", "CD-ROM", "RAM", "Flash memory"], answer: 2 },
+  { question: "What is a significant characteristic of low-level languages?", options: ["Easier to write", "Higher abstraction", "Close to machine code", "Portable"], answer: 2 },
+  { question: "What is the binary representation of the decimal number 15?", options: ["1110", "1111", "1010", "1101"], answer: 1 },
+  { question: "What is a pixel in computer graphics?", options: ["A type of processor", "The smallest element in an image", "A color depth unit", "A binary value"], answer: 1 },
+  { question: "Which file format is commonly used for web images?", options: ["TIFF", "JPEG", "BMP", "PDF"], answer: 1 },
+  { question: "What does the sampling rate determine in audio storage?", options: ["The length of the audio", "The quality of the audio", "The volume level", "The file format"], answer: 1 },
+  { question: "What is the hexadecimal equivalent of the binary number 1111?", options: ["A", "B", "C", "F"], answer: 3 },
+  { question: "What does the ALU compare in logical operations?", options: ["Programs", "Memory locations", "Values", "Voltage levels"], answer: 2 },
+  { question: "Which logic gate outputs 1 when all inputs are 0?", options: ["OR", "NAND", "NOR", "AND"], answer: 2 },
+  { question: "What is a key feature of a high-level programming language?", options: ["Low abstraction", "Close to machine code", "Easy to read and write", "Dependent on hardware"], answer: 2 },
+  { question: "What does the CPU's control unit manage?", options: ["Data storage", "Arithmetic operations", "Execution of instructions", "Graphics processing"], answer: 2 },
+  { question: "What is a machine cycle in the CPU?", options: ["A memory access sequence", "A complete instruction execution process", "A binary operation", "A clock pulse"], answer: 1 },
+  { question: "What is the main function of ROM?", options: ["Temporary data storage", "Storing frequently accessed data", "Permanent storage of essential programs", "Executing user applications"], answer: 2 },
+  { question: "What is the primary use of assembly language?", options: ["Designing algorithms", "Creating machine code", "Low-level programming", "High-level programming"], answer: 2 },
+  { question: "What does the binary digit '0' represent?", options: ["High voltage", "On state", "Low voltage", "Undefined state"], answer: 2 },
+  { question: "What is the primary advantage of using pseudocode?", options: ["Easy debugging", "Human-readable logic representation", "Direct execution", "Improved program speed"], answer: 1 },
+  { question: "Which programming tool visually represents program logic?", options: ["Flowchart", "Debugger", "Assembler", "Editor"], answer: 0 },
+  { question: "What is the function of the program counter (PC)?", options: ["Stores executed instructions", "Tracks the next instruction address", "Manages memory allocation", "Controls the ALU"], answer: 1 },
+  { question: "Which binary operation results in a carry?", options: ["0 + 1", "1 + 1", "1 - 0", "0 - 0"], answer: 1 },
+  { question: "What is the main purpose of testing in PDLC?", options: ["To improve program speed", "To find and fix errors", "To optimize code", "To reduce memory usage"], answer: 1 },
+  { question: "What is the Boolean expression for a NOR gate?", options: ["Y = NOT(A + B)", "Y = A * B", "Y = NOT A", "Y = A + B"], answer: 0 },
+  { question: "Which device is used for permanent storage?", options: ["RAM", "ROM", "Hard disk", "Registers"], answer: 2 },
+  { question: "What is the primary characteristic of ROM?", options: ["Volatile memory", "Temporary storage", "Non-volatile memory", "High-speed processing"], answer: 2 },
+  { question: "What does the ALU perform in addition to arithmetic operations?", options: ["Data storage", "Logical comparisons", "Instruction decoding", "Data fetching"], answer: 1 },
+  { question: "What is a hexadecimal number system?", options: ["Base 10", "Base 8", "Base 16", "Base 2"], answer: 2 },
+  { question: "What is the binary equivalent of the decimal number 7?", options: ["101", "111", "100", "110"], answer: 1 },
+  { question: "Which gate combines OR and NOT gates?", options: ["AND", "NAND", "NOR", "EXOR"], answer: 2 },
+  { question: "What is the decimal equivalent of the binary number 1001?", options: ["7", "8", "9", "10"], answer: 2 },
+  { question: "What is the function of a structure chart?", options: ["Designs memory hierarchy", "Displays program modules", "Encodes binary numbers", "Manages CPU instructions"], answer: 1 },
+  { question: "Which programming phase involves writing pseudocode?", options: ["Planning", "Designing", "Implementation", "Testing"], answer: 1 },
+  { question: "What is the result of the binary subtraction 11 - 1?", options: ["1", "10", "11", "0"], answer: 1 },
+  { question: "What does the sampling rate in audio measure?", options: ["Number of samples per second", "File size", "Bit depth", "Audio length"], answer: 0 },
+  { question: "Which is a key feature of logic gates?", options: ["Store data permanently", "Perform logical operations", "Execute high-level code", "Control input devices"], answer: 1 },
+  { question: "What is the output of an AND gate when all inputs are 0?", options: ["0", "1", "Undefined", "Depends on voltage"], answer: 0 },
+  { question: "What is the decimal value of 2^3?", options: ["6", "7", "8", "9"], answer: 2 },
+  { question: "What is the binary addition of 101 + 11?", options: ["1000", "110", "111", "101"], answer: 1 },
+  { question: "What is a truth table used for in Boolean algebra?", options: ["Testing program logic", "Simplifying logical expressions", "Storing binary data", "Debugging circuits"], answer: 1 },
+  { question: "What is the role of an accumulator in a CPU?", options: ["Stores temporary results", "Fetches instructions", "Executes logic operations", "Manages memory"], answer: 0 }
+    ];
+
+    const selectedQuestions = [];
+    let currentQuestionIndex = 0;
+    const selectedAnswers = new Array(30).fill(null);
+    const timerElement = document.getElementById("timer");
+    let timerInterval;
+
+    // Randomly select 30 questions
+    function selectRandomQuestions() {
+      const shuffled = allQuestions.sort(() => 0.5 - Math.random());
+      selectedQuestions.push(...shuffled.slice(0, 30));
+    }
+
+    // Render the current question
+    function renderQuestion(index) {
+      const questionElement = document.getElementById("question");
+      const optionsElement = document.getElementById("options");
+      const currentQuestion = selectedQuestions[index];
+
+      questionElement.textContent = `Q${index + 1}: ${currentQuestion.question}`;
+      optionsElement.innerHTML = "";
+
+      currentQuestion.options.forEach((option, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <label>
+            <input type="radio" name="option" value="${i}" ${selectedAnswers[index] === i ? "checked" : ""}>
+            ${option}
+          </label>`;
+        optionsElement.appendChild(li);
+      });
+
+      updateButtons();
+    }
+
+    // Render question navigation
+    function renderNavigation() {
+      const navElement = document.getElementById("questionNav");
+      navElement.innerHTML = "";
+
+      selectedQuestions.forEach((_, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = i + 1;
+        btn.classList.toggle("answered", selectedAnswers[i] !== null);
+        btn.addEventListener("click", () => {
+          saveAnswer();
+          currentQuestionIndex = i;
+          renderQuestion(currentQuestionIndex);
+        });
+        navElement.appendChild(btn);
+      });
+    }
+
+    // Save selected answer
+    function saveAnswer() {
+      const selectedOption = document.querySelector("input[name='option']:checked");
+      selectedAnswers[currentQuestionIndex] = selectedOption ? parseInt(selectedOption.value) : null;
+      saveQuizData();
+    }
+
+    // Save quiz data to local storage
+    function saveQuizData() {
+      const quizData = selectedQuestions.map((q, i) => ({
+        question: q.question,
+        options: q.options,
+        selected: selectedAnswers[i],
+        correct: q.answer,
+      }));
+      localStorage.setItem("quizData", JSON.stringify(quizData));
+    }
+
+    // Calculate the quiz score
+    function calculateScore() {
+      return selectedQuestions.reduce((score, q, i) => {
+        return score + (selectedAnswers[i] === q.answer ? 1 : 0);
+      }, 0);
+    }
+
+    // Submit the quiz
+    function submitQuiz() {
+      saveAnswer();
+      clearInterval(timerInterval); // Stop the timer
+      showModal(); // Show the completion modal
+      const score = calculateScore();
+      localStorage.setItem("quizScore", score); // Save score
+    }
+
+    // Timer functionality
+    function startTimer(duration) {
+      let timer = duration;
+      timerInterval = setInterval(() => {
+        const minutes = Math.floor(timer / 60);
+        const seconds = timer % 60;
+
+        timerElement.textContent = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+
+        if (--timer < 0) {
+          clearInterval(timerInterval);
+          submitQuiz(); // Auto-submit on timeout
+        }
+      }, 1000);
+    }
+
+    // Show modal
+    function showModal() {
+      document.getElementById("modalOverlay").style.display = "block";
+      document.getElementById("quizModal").style.display = "block";
+    }
+
+    // Hide modal
+    function hideModal() {
+      document.getElementById("modalOverlay").style.display = "none";
+      document.getElementById("quizModal").style.display = "none";
+    }
+
+    // Update button visibility
+    function updateButtons() {
+        const prevButton = document.getElementById("prev");
+      const nextButton = document.getElementById("next");
+      const submitButton = document.getElementById("submit");
+
+      prevButton.style.display = currentQuestionIndex === 0 ? "none" : "inline-block";
+      nextButton.style.display = currentQuestionIndex === selectedQuestions.length - 1 ? "none" : "inline-block";
+      submitButton.style.display = currentQuestionIndex === selectedQuestions.length - 1 ? "inline-block" : "none";
+    }
+
+    // Event listeners for navigation buttons
+    document.getElementById("next").addEventListener("click", () => {
+      saveAnswer();
+      currentQuestionIndex++;
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+    });
+
+    document.getElementById("prev").addEventListener("click", () => {
+      saveAnswer();
+      currentQuestionIndex--;
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+    });
+
+    document.getElementById("submit").addEventListener("click", submitQuiz);
+
+    document.getElementById("viewScoreButton").addEventListener("click", () => {
+  window.location.href = "score.html"; // Redirect to score.html
+});
+    // Initialize the quiz
+    function initQuiz() {
+      selectRandomQuestions();
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+      startTimer(25 * 60); // Start a 25-minute timer
+    }
+
+    // Initialize quiz on page load
+    window.onload = initQuiz;
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saved Results</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #D2E2DF;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .results-container {
+      background-color: #EEFAF8;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      width: 100%;
+    }
+
+    h1 {
+      color: #4D605E;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+
+    .result {
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+    }
+
+    .result:last-child {
+      border-bottom: none;
+    }
+
+    .timestamp {
+      font-size: 0.9rem;
+      color: #777;
+    }
+
+    .score {
+      color: green;
+      font-size: 1.1rem;
+    }
+    
+    .button-container {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      font-size: 1rem;
+      color: #FFFFFF;
+      background: #4D605E;
+      border: none;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #4D605E;
+      transform: translateY(-2px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .no-results {
+      color: #D14D4D;
+      font-size: 1.1rem;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .clear-btn {
+      background-color: #D14D4D;
+    }
+
+    .clear-btn:hover {
+      background-color: #B23C3C;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="results-container">
+    <h1>Saved Results</h1>
+    <div id="savedResults"></div>
+  </div>
+  
+  <div class="button-container">
+    <a href="index.html" class="btn">Home</a>
+    <button id="clearResultsButton" class="btn clear-btn" onclick="clearResults()" style="display: none;">Clear Results</button>
+  </div>
+
+  <script>
+    // Fetch saved results from localStorage
+    const savedResults = JSON.parse(localStorage.getItem('savedResults')) || [];
+
+    const savedResultsContainer = document.getElementById('savedResults');
+    const clearResultsButton = document.getElementById('clearResultsButton');
+
+    if (savedResults.length === 0) {
+      savedResultsContainer.innerHTML = `<p class="no-results">No quiz results saved yet.</p>`;
+      clearResultsButton.style.display = 'none'; // Hide the Clear Results button if no results
+    } else {
+      savedResults.forEach(result => {
+        const resultDiv = document.createElement('div');
+        resultDiv.classList.add('result');
+
+        resultDiv.innerHTML = `
+          <p><span class="score">Score: ${result.score}</span></p>
+          <p class="timestamp">Date: ${result.timestamp}</p>
+        `;
+
+        savedResultsContainer.appendChild(resultDiv);
+      });
+
+      // Show the Clear Results button when results are displayed
+      clearResultsButton.style.display = 'inline-block';
+    }
+
+    // Function to save the latest quiz result (to be called from score.html)
+    function saveResult(score) {
+      const newResult = {
+        score,
+        timestamp: new Date().toLocaleString() // Add a timestamp
+      };
+      savedResults.push(newResult);
+      localStorage.setItem('savedResults', JSON.stringify(savedResults));
+    }
+
+    // Function to clear saved results
+    function clearResults() {
+      localStorage.removeItem('savedResults');
+      document.getElementById('savedResults').innerHTML = `<p class="no-results">No quiz results saved yet.</p>`;
+      clearResultsButton.style.display = 'none'; // Hide the Clear Results button after clearing
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community Forum</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7f6;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    .container {
+      width: 80%;
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      font-size: 2em;
+      color: #4D605E;
+    }
+
+    .post-form {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 30px;
+    }
+
+    .post-form textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      resize: none;
+      min-height: 100px;
+      font-size: 1em;
+    }
+
+    .post-form button {
+      padding: 10px;
+      background-color: #4D605E;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1.1em;
+    }
+
+    .post-form button:hover {
+      background-color: #3A4D48;
+    }
+
+    .post {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .post-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .post-header img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .post-header span {
+      font-weight: bold;
+    }
+
+    .post-content {
+      margin: 10px 0;
+      font-size: 1.1em;
+    }
+
+    .actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    .actions button {
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 1em;
+      color: #4D605E;
+    }
+
+    .actions button:hover {
+      color: #007bff;
+    }
+
+    .comment-section {
+      margin-top: 20px;
+      padding-left: 20px;
+      border-left: 2px solid #ddd;
+    }
+
+    .comment {
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    .comment img {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .comment-text {
+      flex-grow: 1;
+    }
+
+    input[type="text"], .comment-section button {
+      font-size: 1em;
+      padding: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Community Forum</h1>
+    </header>
+
+    <div class="post-form">
+      <textarea id="postContent" placeholder="What's on your mind?"></textarea>
+      <button onclick="createPost()">Post</button>
+    </div>
+
+    <div id="postsContainer">
+      <!-- Posts will be dynamically added here -->
+    </div>
+  </div>
+
+  <script>
+    // Get user data from localStorage
+    const userData = JSON.parse(localStorage.getItem('profileData')) || { username: "Guest", profilePic: "https://via.placeholder.com/40" };
+
+    // Track liked/disliked posts for the current user
+    let userActions = JSON.parse(localStorage.getItem('userActions')) || {};
+
+    // Create a new post
+    function createPost() {
+      const postContent = document.getElementById('postContent').value;
+
+      if (postContent.trim() === "") {
+        alert("Please enter something to post.");
+        return;
+      }
+
+      const post = {
+        id: Date.now(),
+        username: userData.username,
+        profilePic: userData.profilePic,
+        content: postContent,
+        likes: 0,
+        dislikes: 0,
+        comments: []
+      };
+
+      // Store the post in localStorage
+      let posts = JSON.parse(localStorage.getItem('posts')) || [];
+      posts.push(post);
+      localStorage.setItem('posts', JSON.stringify(posts));
+
+      // Clear textarea
+      document.getElementById('postContent').value = '';
+
+      // Re-render the posts
+      renderPosts();
+    }
+
+    // Render posts
+    function renderPosts() {
+      const postsContainer = document.getElementById('postsContainer');
+      postsContainer.innerHTML = '';
+
+      const posts = JSON.parse(localStorage.getItem('posts')) || [];
+
+      posts.forEach(post => {
+        const postElement = document.createElement('div');
+        postElement.classList.add('post');
+        
+        postElement.innerHTML = `
+          <div class="post-header">
+            <img src="${post.profilePic}" alt="Profile Picture">
+            <span>${post.username}</span>
+          </div>
+          <div class="post-content">${post.content}</div>
+          <div class="actions">
+            <button id="like-${post.id}" onclick="likePost(${post.id})" ${hasUserLikedOrDisliked(post.id).liked ? 'disabled' : ''}>Like (${post.likes})</button>
+            <button id="dislike-${post.id}" onclick="dislikePost(${post.id})" ${hasUserLikedOrDisliked(post.id).disliked ? 'disabled' : ''}>Dislike (${post.dislikes})</button>
+            <button onclick="deletePost(${post.id})">Delete</button>
+          </div>
+          <div class="comment-section">
+            <input type="text" id="commentInput-${post.id}" placeholder="Add a comment...">
+            <button onclick="addComment(${post.id})">Comment</button>
+            ${renderComments(post.comments, post.id)}
+          </div>
+        `;
+
+        postsContainer.appendChild(postElement);
+      });
+    }
+
+    // Check if the user has liked or disliked the post
+    function hasUserLikedOrDisliked(postId) {
+      return userActions[postId] || { liked: false, disliked: false };
+    }
+
+    // Like a post
+    function likePost(postId) {
+      if (hasUserLikedOrDisliked(postId).disliked) {
+        alert("You cannot like and dislike a post at the same time.");
+        return;
+      }
+
+      let posts = JSON.parse(localStorage.getItem('posts')) || [];
+      const post = posts.find(post => post.id === postId);
+      post.likes += 1;
+      localStorage.setItem('posts', JSON.stringify(posts));
+
+      // Update user actions
+      userActions[postId] = { liked: true, disliked: false };
+      localStorage.setItem('userActions', JSON.stringify(userActions));
+
+      renderPosts();
+    }
+
+    // Dislike a post
+    function dislikePost(postId) {
+      if (hasUserLikedOrDisliked(postId).liked) {
+        alert("You cannot like and dislike a post at the same time.");
+        return;
+      }
+
+      let posts = JSON.parse(localStorage.getItem('posts')) || [];
+      const post = posts.find(post => post.id === postId);
+      post.dislikes += 1;
+      localStorage.setItem('posts', JSON.stringify(posts));
+
+      // Update user actions
+      userActions[postId] = { liked: false, disliked: true };
+      localStorage.setItem('userActions', JSON.stringify(userActions));
+
+      renderPosts();
+    }
+
+    // Delete a post
+    function deletePost(postId) {
+      let posts = JSON.parse(localStorage.getItem('posts')) || [];
+      posts = posts.filter(post => post.id !== postId);
+      localStorage.setItem('posts', JSON.stringify(posts));
+      renderPosts();
+    }
+
+    // Add a comment to a post
+    function addComment(postId) {
+      const commentInput = document.getElementById(`commentInput-${postId}`);
+      const commentContent = commentInput.value;
+
+      if (commentContent.trim() === "") {
+        alert("Please enter a comment.");
+        return;
+      }
+
+      let posts = JSON.parse(localStorage.getItem('posts')) || [];
+      const post = posts.find(post => post.id === postId);
+      post.comments.push({
+        username: userData.username,
+        profilePic: userData.profilePic,
+        content: commentContent
+      });
+      localStorage.setItem('posts', JSON.stringify(posts));
+
+      // Clear comment input and re-render posts
+      commentInput.value = '';
+      renderPosts();
+    }
+
+    // Render comments
+    function renderComments(comments, postId) {
+      return comments.map(comment => `
+        <div class="comment">
+          <img src="${comment.profilePic}" alt="Profile Picture">
+          <div class="comment-text">
+            <strong>${comment.username}</strong>: ${comment.content}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Initial render
+    renderPosts();
+  </script>
+
+</body>
+</html>

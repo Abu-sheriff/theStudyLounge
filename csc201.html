@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoungeQuizzing</title>
+  <style>
+    /* General Styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #D2E2DF;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      color: #4D605E;
+      font-size: 2rem;
+    }
+
+    .quiz-container {
+      background-color: #EEFAF8;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .timer {
+      text-align: right;
+      font-size: 1.2rem;
+      color: red;
+      margin-bottom: 10px;
+    }
+
+    .question {
+      margin: 15px 0;
+    }
+
+    .options {
+      list-style: none;
+      padding: 0;
+    }
+
+    .options li {
+      margin: 10px 0;
+    }
+
+    .options input[type="radio"] {
+      margin-right: 10px;
+    }
+
+    /* Buttons */
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .prev-btn {
+      background-color: #D2E2DF;
+      color: #333;
+      display: none;
+    }
+
+    .next-btn {
+      background-color: #006400;
+      color: #fff;
+    }
+
+    .submit-btn {
+      background-color: #4D605E;
+      color: #fff;
+      display: none;
+    }
+
+    /* Question Navigation */
+    .question-navigation {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+      gap: 5px;
+      margin-top: 20px;
+    }
+
+    .question-navigation button {
+      background-color: #D2E2DF;
+      color: #333;
+      border: 1px solid #4D605E;
+      font-size: 1rem;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
+    .question-navigation button.answered {
+      background-color: #4D605E;
+      color: #fff;
+    }
+
+    /* Media Queries for Responsiveness */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .quiz-container {
+        padding: 15px;
+      }
+
+      button {
+        font-size: 0.95rem;
+        padding: 10px 16px;
+      }
+
+      .timer {
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .quiz-container {
+        padding: 10px;
+      }
+
+      .timer {
+        font-size: 0.9rem;
+      }
+
+      button {
+        font-size: 0.9rem;
+        padding: 8px 14px;
+      }
+
+      .question-navigation button {
+        font-size: 0.9rem;
+        padding: 6px 8px;
+      }
+    }
+
+    /* Pop-Up Modal Styling */
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      text-align: center;
+      z-index: 1000;
+      display: none;
+    }
+
+    .modal h2 {
+      color: #4D605E;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+
+    .modal button {
+      background-color: #006400;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .modal button:hover {
+      background-color: #004d00;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>LoungeQuizzing</h1>
+  </header>
+  <div class="quiz-container">
+    <div class="timer" id="timer">25:00</div>
+    <div class="question" id="question">Question will appear here</div>
+    <ul class="options" id="options"></ul>
+
+    <div class="buttons">
+      <button class="prev-btn" id="prev">Previous</button>
+      <button class="next-btn" id="next">Next</button>
+      <button class="submit-btn" id="submit">Submit</button>
+    </div>
+
+    <div class="question-navigation" id="questionNav"></div>
+  </div>
+  <div class="modal-overlay" id="modalOverlay"></div>
+  <div class="modal" id="quizModal">
+    <h2>Quiz Completed</h2>
+    <button id="viewScoreButton">View Score</button>
+  </div>
+
+  <script>
+    // Initialize quiz data
+    const allQuestions = [
+  { question: "Who developed C++?", options: ["Dennis Ritchie", "Bjarne Stroustrup", "James Gosling", "Guido van Rossum"], answer: 1 },
+  { question: "What is the main purpose of C++?", options: ["Web development", "High-performance applications", "Data visualization", "Machine learning"], answer: 1 },
+  { question: "Which year was C++ first updated to C++11?", options: ["2009", "2011", "2013", "2015"], answer: 1 },
+  { question: "What is a major difference between C and C++?", options: ["C++ supports classes and objects", "C is object-oriented", "C++ does not support functions", "C++ is interpreted"], answer: 0 },
+  { question: "Which IDE is recommended for beginners in the handout?", options: ["Code::Blocks", "Eclipse", "NetBeans", "Atom"], answer: 0 },
+  { question: "What file extension is used for C++ files?", options: [".cpp", ".cxx", ".cc", ".cp"], answer: 0 },
+  { question: "Which of these is a valid header file in C++?", options: ["#include <output>", "#include <iostream>", "#include <std>", "#include <input>"], answer: 1 },
+  { question: "What does 'using namespace std;' allow you to do?", options: ["Omit 'std::' prefix", "Ignore white spaces", "Add custom namespaces", "Enable input/output"], answer: 0 },
+  { question: "What is the function of 'cout' in C++?", options: ["Takes input", "Prints output", "Ends the program", "Defines a class"], answer: 1 },
+  { question: "What symbol is used to end a statement in C++?", options: [";", ":", ".", ","], answer: 0 },
+  { question: "What is the correct way to declare an integer variable in C++?", options: ["int x;", "integer x;", "var x;", "num x;"], answer: 0 },
+  { question: "Which keyword is used to declare a constant variable?", options: ["final", "static", "const", "let"], answer: 2 },
+  { question: "Which operator is used for addition in C++?", options: ["-", "+", "*", "/"], answer: 1 },
+  { question: "Which operator is used for comparison in C++?", options: ["++", "==", "&&", "="], answer: 1 },
+  { question: "Which data type is used to store floating-point numbers?", options: ["int", "char", "float", "bool"], answer: 2 },
+  { question: "What does the 'bool' data type store?", options: ["Whole numbers", "Decimal values", "True/false values", "Characters"], answer: 2 },
+  { question: "What is the output of 'cout << 5 + 3;'?", options: ["8", "53", "Error", "5 + 3"], answer: 0 },
+  { question: "Which loop runs at least once, even if the condition is false?", options: ["for", "while", "do/while", "foreach"], answer: 2 },
+  { question: "Which statement is used to terminate a loop early?", options: ["exit", "break", "stop", "terminate"], answer: 1 },
+  { question: "Which statement is used to skip the current iteration in a loop?", options: ["break", "continue", "skip", "pass"], answer: 1 },
+  { question: "What is the syntax for a 'for' loop?", options: ["for (init; condition; increment)", "for {condition}", "loop (condition)", "while (condition)"], answer: 0 },
+  { question: "What is a class in C++?", options: ["A function", "A blueprint for objects", "A data type", "A variable"], answer: 1 },
+  { question: "Which access specifier makes class members accessible outside the class?", options: ["private", "public", "protected", "default"], answer: 1 },
+  { question: "How do you create an object of a class?", options: ["class ObjectName;", "ObjectName obj;", "ClassName obj;", "new ObjectName;"], answer: 2 },
+  { question: "Which keyword is used to declare a function that does not return a value?", options: ["int", "float", "void", "return"], answer: 2 },
+  { question: "Which library is required for string operations?", options: ["<iostream>", "<string>", "<math>", "<stdlib>"], answer: 1 },
+  { question: "What is the function of 'getline()' in C++?", options: ["Get single word input", "Get full line input", "Clear input buffer", "Convert input to integer"], answer: 1 },
+  { question: "Which function calculates the square root of a number?", options: ["sqrt()", "pow()", "abs()", "log()"], answer: 0 },
+  { question: "Which operator is used for string concatenation?", options: ["*", "+", "&", "/"], answer: 1 },
+  { question: "Which keyword is used to create a new class?", options: ["object", "new", "class", "struct"], answer: 2 },
+  { question: "What is the result of '10 / 3' in C++ if both operands are integers?", options: ["3", "3.33", "Error", "10/3"], answer: 0 },
+  { question: "Which function is used to output text in C++?", options: ["print()", "cout", "echo", "output"], answer: 1 },
+  { question: "What does the 'return' keyword do in a function?", options: ["Ends the function", "Returns a value", "Both A and B", "Creates a loop"], answer: 2 },
+  { question: "What is the output of 'cout << (5 > 3);'?", options: ["true", "false", "1", "0"], answer: 2 },
+  { question: "Which function is used to round numbers in C++?", options: ["ceil()", "floor()", "round()", "trunc()"], answer: 2 },
+  { question: "What is the size of a boolean variable in C++?", options: ["1 byte", "2 bytes", "4 bytes", "8 bytes"], answer: 0 },
+  { question: "Which escape sequence is used to insert a new line?", options: ["\\n", "\\t", "\\r", "\\b"], answer: 0 },
+  { question: "What does 'main()' signify in a C++ program?", options: ["The entry point", "The end of a program", "An infinite loop", "A variable"], answer: 0 },
+  { question: "What is the syntax to include the math library in C++?", options: ["#include <math>", "#include <cmath>", "#include <mathlib>", "#include <m>"], answer: 1 },
+  { question: "What is the default value of an uninitialized integer variable in C++?", options: ["0", "null", "undefined", "Garbage value"], answer: 3 },
+  { question: "Which operator is used to access class members?", options: [".", "->", "::", "[]"], answer: 0 },
+  { question: "Which of these is a valid way to define a constant in C++?", options: ["const int x = 5;", "constant int x = 5;", "int const x = 5;", "int x = 5 const;"], answer: 0 },
+  { question: "What does the 'cin' object do in C++?", options: ["Takes user input", "Displays output", "Defines a variable", "Declares a function"], answer: 0 },
+  { question: "Which of these is not a valid C++ data type?", options: ["int", "float", "char", "real"], answer: 3 },
+  { question: "Which of the following is used to create a string variable in C++?", options: ["string name;", "str name;", "text name;", "var name;"], answer: 0 },
+  { question: "Which function is used to calculate the absolute value of a number?", options: ["abs()", "fabs()", "sqrt()", "round()"], answer: 0 },
+  { question: "Which of the following will return the size of a data type in bytes?", options: ["sizeof()", "lengthof()", "type_size()", "bytesize()"], answer: 0 },
+  { question: "What does 'return 0;' do in a C++ program?", options: ["Indicates successful execution", "Returns an error code", "Ends the program", "Prints 0 to the screen"], answer: 0 },
+  { question: "Which operator is used for logical AND in C++?", options: ["&&", "||", "&", "|"], answer: 0 },
+  { question: "What is the correct way to declare an array of 5 integers?", options: ["int arr[5];", "int arr[] = {5};", "int[5] arr;", "array<int> arr[5];"], answer: 0 },
+  { question: "Which of the following is a valid C++ function declaration?", options: ["void function();", "int function[];", "function int;", "function() void;"], answer: 0 },
+  { question: "What is the output of 'cout << 10 % 3;'", options: ["1", "3", "0", "Error"], answer: 0 },
+  { question: "Which of the following is used to handle exceptions in C++?", options: ["try...catch", "throw...catch", "error...catch", "catch...try"], answer: 0 },
+  { question: "Which of the following is true about pointers in C++?", options: ["Pointers store memory addresses", "Pointers store variable values", "Pointers are not used in C++", "Pointers cannot be dereferenced"], answer: 0 },
+  { question: "What is the syntax to access a pointer in C++?", options: ["*ptr", "ptr*", "ptr[]", "ptr->"], answer: 0 },
+  { question: "What does the 'new' keyword do in C++?", options: ["Allocates memory", "Creates a function", "Declares a class", "Assigns a value to a variable"], answer: 0 },
+  { question: "Which keyword is used to delete a dynamically allocated memory in C++?", options: ["delete", "free", "clear", "dispose"], answer: 0 },
+  { question: "Which of the following is the correct syntax to define a class method outside the class?", options: ["void ClassName::methodName()", "void methodName::ClassName()", "ClassName.methodName()", "methodName.ClassName()"], answer: 0 },
+  { question: "What is the correct syntax for a switch statement in C++?", options: ["switch (expression) { case x: break; }", "switch (expression) { x: break; }", "case x: switch(expression);", "switch { case x: }"], answer: 0 },
+  { question: "What does the 'break' keyword do inside a switch statement?", options: ["Exits the switch block", "Exits the program", "Terminates a loop", "Returns a value"], answer: 0 },
+  { question: "Which of these is a valid C++ class constructor?", options: ["ClassName() {}", "ClassName{}()", "void ClassName() {}", "ClassName() : constructor() {}"], answer: 0 },
+  { question: "What is the purpose of the 'this' pointer in C++?", options: ["It points to the current object", "It stores the address of a function", "It holds the address of the main function", "It is used to store global variables"], answer: 0 },
+  { question: "Which of these is a valid way to declare a vector in C++?", options: ["vector<int> v;", "vector v<int>;", "v<vector> int;", "int v[] = vector;"], answer: 0 },
+  { question: "What does the '->' operator do in C++?", options: ["Accesses a class member through a pointer", "Assigns a value to a pointer", "Defines a class", "Returns the value of a pointer"], answer: 0 },
+  { question: "What is the correct syntax for a do/while loop in C++?", options: ["do { } while(condition);", "do { while(condition); }", "while(condition) do { }", "do while(condition) { }"], answer: 0 },
+  { question: "What does the 'continue' keyword do in a loop?", options: ["Skips the current iteration", "Exits the loop", "Repeats the loop", "Ends the program"], answer: 0 },
+  { question: "Which of these is a valid C++ statement to compare two variables x and y for equality?", options: ["if (x == y)", "if (x = y)", "if (x != y)", "if (x < y)"], answer: 0 },
+  { question: "What is the correct way to define a function that returns an integer?", options: ["int function() {}", "void function() {}", "function() int {}", "return int function() {}"], answer: 0 },
+  { question: "Which of these is not a valid C++ operator?", options: ["++", "--", "//", "%%"], answer: 3 },
+  { question: "What is the output of 'cout << (5 == 5);'", options: ["1", "0", "true", "false"], answer: 0 },
+  { question: "What does the 'sizeof()' function return in C++?", options: ["Size of a variable in bytes", "Size of an array", "Size of a function", "Number of elements in an array"], answer: 0 },
+  { question: "Which of the following is used to define a function that doesn't return any value?", options: ["void", "int", "char", "float"], answer: 0 },
+  { question: "What does 'const' do in C++?", options: ["Declares a constant variable", "Creates a function", "Defines a class", "Allocates memory"], answer: 0 },
+  { question: "Which of these operators is used for modulus operation?", options: ["%", "/", "*", "+"], answer: 0 },
+  { question: "What does the 'void' keyword signify in a function?", options: ["The function does not return any value", "The function returns an integer", "The function returns a string", "The function is not executed"], answer: 0 },
+  { question: "Which of the following is used to add a new element to a vector?", options: ["push_back()", "insert()", "add()", "append()"], answer: 0 },
+  { question: "Which operator is used to dereference a pointer?", options: ["*", "&", "->", "::"], answer: 0 },
+  { question: "Which of the following statements is true about C++ classes?", options: ["Classes can contain variables and functions", "Classes are not reusable", "Classes cannot have constructors", "Classes are not object-oriented"], answer: 0 },
+  { question: "Which of the following is a valid way to initialize an array in C++?", options: ["int arr[] = {1, 2, 3};", "int arr = {1, 2, 3};", "int[] arr = {1, 2, 3};", "int arr[3] = {1, 2};"], answer: 0 },
+  { question: "What does the 'public' access specifier allow in C++?", options: ["Access from outside the class", "Access only within the class", "Access from derived classes", "Access from private functions"], answer: 0 },
+  { question: "What is the purpose of a constructor in a class?", options: ["Initialize objects of the class", "Define methods for the class", "Create a pointer to the class", "Define variables for the class"], answer: 0 },
+  { question: "What does the 'static' keyword do in C++?", options: ["Makes a variable retain its value between function calls", "Creates a global variable", "Defines a function", "Creates a new object"], answer: 0 },
+  { question: "What is the default access specifier for class members?", options: ["public", "private", "protected", "default"], answer: 1 },
+  { question: "What does the 'nullptr' keyword represent in C++?", options: ["A null pointer", "A function", "A variable", "A constant"], answer: 0 },
+  { question: "Which operator is used to access elements in an array?", options: ["[]", "()", "{}", "<>"], answer: 0 },
+  { question: "What is the result of 'cout << (3 + 4 * 2);'?", options: ["14", "11", "7", "5"], answer: 0 },
+  { question: "What does the 'return' keyword do in C++?", options: ["Exits a function", "Declares a variable", "Creates a loop", "Ends the program"], answer: 0 },
+  { question: "What is the correct way to initialize a vector in C++?", options: ["vector<int> v = {1, 2, 3};", "vector v<int> = {1, 2, 3};", "vector<int> v[3] = {1, 2, 3};", "vector<int> v = 1, 2, 3;"], answer: 0 },
+  { question: "What does the 'endl' manipulator do in C++?", options: ["Inserts a new line", "Inserts a tab", "Adds a space", "Ends the program"], answer: 0 }
+    ];
+
+    const selectedQuestions = [];
+    let currentQuestionIndex = 0;
+    const selectedAnswers = new Array(30).fill(null);
+    const timerElement = document.getElementById("timer");
+    let timerInterval;
+
+    // Randomly select 30 questions
+    function selectRandomQuestions() {
+      const shuffled = allQuestions.sort(() => 0.5 - Math.random());
+      selectedQuestions.push(...shuffled.slice(0, 30));
+    }
+
+    // Render the current question
+    function renderQuestion(index) {
+      const questionElement = document.getElementById("question");
+      const optionsElement = document.getElementById("options");
+      const currentQuestion = selectedQuestions[index];
+
+      questionElement.textContent = `Q${index + 1}: ${currentQuestion.question}`;
+      optionsElement.innerHTML = "";
+
+      currentQuestion.options.forEach((option, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <label>
+            <input type="radio" name="option" value="${i}" ${selectedAnswers[index] === i ? "checked" : ""}>
+            ${option}
+          </label>`;
+        optionsElement.appendChild(li);
+      });
+
+      updateButtons();
+    }
+
+    // Render question navigation
+    function renderNavigation() {
+      const navElement = document.getElementById("questionNav");
+      navElement.innerHTML = "";
+
+      selectedQuestions.forEach((_, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = i + 1;
+        btn.classList.toggle("answered", selectedAnswers[i] !== null);
+        btn.addEventListener("click", () => {
+          saveAnswer();
+          currentQuestionIndex = i;
+          renderQuestion(currentQuestionIndex);
+        });
+        navElement.appendChild(btn);
+      });
+    }
+
+    // Save selected answer
+    function saveAnswer() {
+      const selectedOption = document.querySelector("input[name='option']:checked");
+      selectedAnswers[currentQuestionIndex] = selectedOption ? parseInt(selectedOption.value) : null;
+      saveQuizData();
+    }
+
+    // Save quiz data to local storage
+    function saveQuizData() {
+      const quizData = selectedQuestions.map((q, i) => ({
+        question: q.question,
+        options: q.options,
+        selected: selectedAnswers[i],
+        correct: q.answer,
+      }));
+      localStorage.setItem("quizData", JSON.stringify(quizData));
+    }
+
+    // Calculate the quiz score
+    function calculateScore() {
+      return selectedQuestions.reduce((score, q, i) => {
+        return score + (selectedAnswers[i] === q.answer ? 1 : 0);
+      }, 0);
+    }
+
+    // Submit the quiz
+    function submitQuiz() {
+      saveAnswer();
+      clearInterval(timerInterval); // Stop the timer
+      showModal(); // Show the completion modal
+      const score = calculateScore();
+      localStorage.setItem("quizScore", score); // Save score
+    }
+
+    // Timer functionality
+    function startTimer(duration) {
+      let timer = duration;
+      timerInterval = setInterval(() => {
+        const minutes = Math.floor(timer / 60);
+        const seconds = timer % 60;
+
+        timerElement.textContent = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+
+        if (--timer < 0) {
+          clearInterval(timerInterval);
+          submitQuiz(); // Auto-submit on timeout
+        }
+      }, 1000);
+    }
+
+    // Show modal
+    function showModal() {
+      document.getElementById("modalOverlay").style.display = "block";
+      document.getElementById("quizModal").style.display = "block";
+    }
+
+    // Hide modal
+    function hideModal() {
+      document.getElementById("modalOverlay").style.display = "none";
+      document.getElementById("quizModal").style.display = "none";
+    }
+
+    // Update button visibility
+    function updateButtons() {
+        const prevButton = document.getElementById("prev");
+      const nextButton = document.getElementById("next");
+      const submitButton = document.getElementById("submit");
+
+      prevButton.style.display = currentQuestionIndex === 0 ? "none" : "inline-block";
+      nextButton.style.display = currentQuestionIndex === selectedQuestions.length - 1 ? "none" : "inline-block";
+      submitButton.style.display = currentQuestionIndex === selectedQuestions.length - 1 ? "inline-block" : "none";
+    }
+
+    // Event listeners for navigation buttons
+    document.getElementById("next").addEventListener("click", () => {
+      saveAnswer();
+      currentQuestionIndex++;
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+    });
+
+    document.getElementById("prev").addEventListener("click", () => {
+      saveAnswer();
+      currentQuestionIndex--;
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+    });
+
+    document.getElementById("submit").addEventListener("click", submitQuiz);
+
+    document.getElementById("viewScoreButton").addEventListener("click", () => {
+  window.location.href = "score.html"; // Redirect to score.html
+});
+    // Initialize the quiz
+    function initQuiz() {
+      selectRandomQuestions();
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+      startTimer(25 * 60); // Start a 25-minute timer
+    }
+
+    // Initialize quiz on page load
+    window.onload = initQuiz;
+  </script>
+</body>
+</html>
+

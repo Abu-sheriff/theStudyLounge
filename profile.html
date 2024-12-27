@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #D2E2DF; /* Soft green background */
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #4D605E; /* Darker green for a professional look */
+      margin-top: 20px;
+    }
+
+    .profile-container {
+      margin: 20px auto;
+      width: 90%;
+      max-width: 400px;
+      background-color: #EEFAF8; /* White card-like container */
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Enhanced shadow for a modern look */
+    }
+
+    .profile-picture {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for profile picture */
+    }
+
+    .profile-info {
+      text-align: left;
+      margin-top: 15px;
+    }
+
+    .profile-info p {
+      margin: 8px 0;
+      font-size: 16px;
+      color: #333; /* Slightly darker text for contrast */
+    }
+
+    .profile-info span {
+      font-weight: bold;
+      color: #4D605E; /* Consistent green accent for labels */
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #4D605E; /* Matches your green theme */
+      color: #ffffff;
+      font-size: 14px;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .back-btn:hover {
+      background-color: #4D605E; /* Darker green on hover */
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Slightly deeper shadow on hover */
+    }
+  </style>
+</head>
+<body>
+  <h1>The Study Lounge</h1>
+  <h1>User Profile</h1>
+  <div class="profile-container">
+    <img id="profile-picture" class="profile-picture" alt="Profile Picture" src="default-profile.png">
+    <div class="profile-info">
+      <p><span>Name:</span> <span id="name">Name not provided</span></p>
+      <p><span>Username:</span> <span id="username">Username not provided</span></p>
+      <p><span>Phone:</span> <span id="phone">Phone number not provided</span></p>
+      <p><span>Email:</span> <span id="email">Email not provided</span></p>
+      <p><span>Institution:</span> <span id="institution">Institution not provided</span></p>
+      <p><span>Department:</span> <span id="department">Department not provided</span></p>
+      <p><span>Level:</span> <span id="level">Level not provided</span></p>
+      <p><span>Gender:</span> <span id="gender">Gender not provided</span></p>
+      <p><span>Type:</span> <span id="type">Type not provided</span></p>
+      <p><span>Date of Birth:</span> <span id="dob">Date of birth not provided</span></p>
+      <p><span>Bio:</span> <span id="bio">Bio not provided</span></p>
+    </div>
+    <a href="index.html" class="back-btn">Home</a>
+  </div>
+
+  <script>
+    // Retrieve profile data from local storage
+    const profileData = JSON.parse(localStorage.getItem("profileData"));
+
+    if (profileData) {
+      // Populate fields with profile data, using default values if not provided
+      document.getElementById("profile-picture").src = profileData.profilePic || "default-profile.png"; // Default image if none is uploaded
+      document.getElementById("name").textContent = profileData.name || "Name not provided";
+      document.getElementById("username").textContent = profileData.username || "Username not provided";
+      document.getElementById("phone").textContent = profileData.phone || "Phone number not provided";
+      document.getElementById("email").textContent = profileData.email || "Email not provided";
+      document.getElementById("institution").textContent = profileData.institution || "Institution not provided";
+      document.getElementById("department").textContent = profileData.department || "Department not provided";
+      document.getElementById("level").textContent = profileData.level || "Level not provided";
+      document.getElementById("gender").textContent = profileData.gender || "Gender not provided";
+      document.getElementById("type").textContent = profileData.type || "Type not provided";
+      document.getElementById("dob").textContent = profileData.dob || "Date of birth not provided";
+      document.getElementById("bio").textContent = profileData.bio || "Bio not provided";
+    } else {
+      alert("No profile data found. Please complete setup.html first.");
+    }
+  </script>
+</body>
+</html>

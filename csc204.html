@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoungeQuizzing</title>
+  <style>
+    /* General Styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #D2E2DF;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      color: #4D605E;
+      font-size: 2rem;
+    }
+
+    .quiz-container {
+      background-color: #EEFAF8;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .timer {
+      text-align: right;
+      font-size: 1.2rem;
+      color: red;
+      margin-bottom: 10px;
+    }
+
+    .question {
+      margin: 15px 0;
+    }
+
+    .options {
+      list-style: none;
+      padding: 0;
+    }
+
+    .options li {
+      margin: 10px 0;
+    }
+
+    .options input[type="radio"] {
+      margin-right: 10px;
+    }
+
+    /* Buttons */
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .prev-btn {
+      background-color: #D2E2DF;
+      color: #333;
+      display: none;
+    }
+
+    .next-btn {
+      background-color: #006400;
+      color: #fff;
+    }
+
+    .submit-btn {
+      background-color: #4D605E;
+      color: #fff;
+      display: none;
+    }
+
+    /* Question Navigation */
+    .question-navigation {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+      gap: 5px;
+      margin-top: 20px;
+    }
+
+    .question-navigation button {
+      background-color: #D2E2DF;
+      color: #333;
+      border: 1px solid #4D605E;
+      font-size: 1rem;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
+    .question-navigation button.answered {
+      background-color: #4D605E;
+      color: #fff;
+    }
+
+    /* Media Queries for Responsiveness */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .quiz-container {
+        padding: 15px;
+      }
+
+      button {
+        font-size: 0.95rem;
+        padding: 10px 16px;
+      }
+
+      .timer {
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .quiz-container {
+        padding: 10px;
+      }
+
+      .timer {
+        font-size: 0.9rem;
+      }
+
+      button {
+        font-size: 0.9rem;
+        padding: 8px 14px;
+      }
+
+      .question-navigation button {
+        font-size: 0.9rem;
+        padding: 6px 8px;
+      }
+    }
+
+    /* Pop-Up Modal Styling */
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      text-align: center;
+      z-index: 1000;
+      display: none;
+    }
+
+    .modal h2 {
+      color: #4D605E;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+
+    .modal button {
+      background-color: #006400;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .modal button:hover {
+      background-color: #004d00;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>LoungeQuizzing</h1>
+  </header>
+  <div class="quiz-container">
+    <div class="timer" id="timer">25:00</div>
+    <div class="question" id="question">Question will appear here</div>
+    <ul class="options" id="options"></ul>
+
+    <div class="buttons">
+      <button class="prev-btn" id="prev">Previous</button>
+      <button class="next-btn" id="next">Next</button>
+      <button class="submit-btn" id="submit">Submit</button>
+    </div>
+
+    <div class="question-navigation" id="questionNav"></div>
+  </div>
+  <div class="modal-overlay" id="modalOverlay"></div>
+  <div class="modal" id="quizModal">
+    <h2>Quiz Completed</h2>
+    <button id="viewScoreButton">View Score</button>
+  </div>
+
+  <script>
+    // Initialize quiz data
+    const allQuestions = [
+  { question: "What is a data structure?", options: ["A database system", "A way to store and organize data", "A programming language", "A method for compiling code"], answer: 1 },
+  { question: "Which of the following is a linear data structure?", options: ["Tree", "Graph", "Array", "Hash table"], answer: 2 },
+  { question: "What is the main purpose of a stack?", options: ["To store data sequentially", "To access data randomly", "To follow LIFO (Last In, First Out)", "To follow FIFO (First In, First Out)"], answer: 2 },
+  { question: "Which operation is used to remove an element from a stack?", options: ["Enqueue", "Pop", "Push", "Insert"], answer: 1 },
+  { question: "What is a queue?", options: ["A LIFO data structure", "A FIFO data structure", "A graph representation", "A type of linked list"], answer: 1 },
+  { question: "What does FIFO stand for?", options: ["First In First Out", "First In Fast Out", "Fast In First Out", "File In File Out"], answer: 0 },
+  { question: "Which of these is a non-linear data structure?", options: ["Array", "Queue", "Graph", "Stack"], answer: 2 },
+  { question: "What is a binary tree?", options: ["A tree with no nodes", "A tree with exactly two child nodes for every parent", "A tree with at most two children per node", "A tree with multiple roots"], answer: 2 },
+  { question: "What is the maximum number of nodes in a binary tree of height h?", options: ["2^h - 1", "2^(h+1) - 1", "h^2", "h+1"], answer: 0 },
+  { question: "What is a linked list?", options: ["A sequential list with fixed size", "A collection of nodes with pointers to the next node", "A hierarchical structure", "A two-dimensional array"], answer: 1 },
+  { question: "Which of these is not a type of linked list?", options: ["Singly linked list", "Doubly linked list", "Circular linked list", "Binary linked list"], answer: 3 },
+  { question: "What is a hash table used for?", options: ["Sorting data", "Storing data with a key-value pair", "Searching sequentially", "Traversing graphs"], answer: 1 },
+  { question: "What is a collision in a hash table?", options: ["When two keys map to the same index", "When data cannot be inserted", "When the table is full", "When hashing fails"], answer: 0 },
+  { question: "What is the purpose of a graph?", options: ["To sort data", "To represent relationships between entities", "To store sequential data", "To implement stacks"], answer: 1 },
+  { question: "Which of these is a directed graph?", options: ["A graph with undirected edges", "A graph with edges having direction", "A graph with weighted edges", "A graph with no cycles"], answer: 1 },
+  { question: "What is a tree traversal?", options: ["Deleting nodes in a tree", "Visiting all the nodes in a tree", "Balancing the tree", "Creating a tree"], answer: 1 },
+  { question: "Which tree traversal method visits the root first?", options: ["Inorder", "Preorder", "Postorder", "Level order"], answer: 1 },
+  { question: "What is the time complexity of searching in a binary search tree (BST)?", options: ["O(n)", "O(log n)", "O(n^2)", "O(1)"], answer: 1 },
+  { question: "What is a priority queue?", options: ["A queue where elements are processed based on their arrival", "A queue where each element has a priority", "A queue that uses LIFO", "A queue with a fixed size"], answer: 1 },
+  { question: "What is the main feature of a circular queue?", options: ["It does not allow deletion", "It is implemented as a linked list", "It connects the rear and front", "It uses multiple stacks"], answer: 2 },
+  { question: "What is a heap?", options: ["A sorted array", "A special tree-based data structure", "A stack with additional operations", "A type of graph"], answer: 1 },
+  { question: "What is a max heap?", options: ["A heap where the maximum value is at the root", "A heap where the minimum value is at the root", "A heap with no children", "A heap used for sorting"], answer: 0 },
+  { question: "What is the time complexity of heap sort?", options: ["O(n^2)", "O(n log n)", "O(log n)", "O(n)"], answer: 1 },
+  { question: "What is the adjacency matrix in graph representation?", options: ["A list of all edges", "A 2D array representing edges", "A sequential list of nodes", "A tree structure"], answer: 1 },
+  { question: "What is the main purpose of breadth-first search (BFS)?", options: ["To explore the graph level by level", "To explore all paths recursively", "To find the shortest path", "To sort graph nodes"], answer: 0 },
+  { question: "What is depth-first search (DFS)?", options: ["A method to traverse graphs using recursion", "A method to sort arrays", "A way to search data in a stack", "A queue traversal technique"], answer: 0 },
+  { question: "What is the key difference between BFS and DFS?", options: ["DFS uses a queue; BFS uses a stack", "BFS uses a queue; DFS uses a stack", "DFS is faster than BFS", "BFS explores depth first"], answer: 1 },
+  { question: "What is the space complexity of DFS?", options: ["O(n)", "O(log n)", "O(1)", "O(n^2)"], answer: 0 },
+  { question: "What is a spanning tree?", options: ["A tree with no root", "A tree covering all vertices of a graph", "A tree with only one edge", "A tree used for sorting"], answer: 1 },
+  { question: "What is the minimum spanning tree?", options: ["A tree with minimum height", "A spanning tree with minimum edge weight", "A spanning tree with no cycles", "A tree with directed edges"], answer: 1 },
+  { question: "What is the Kruskal’s algorithm used for?", options: ["Finding shortest paths", "Finding minimum spanning tree", "Sorting nodes in a tree", "Balancing a binary tree"], answer: 1 },
+  { question: "What is the main feature of Prim’s algorithm?", options: ["It is a greedy algorithm", "It uses dynamic programming", "It sorts the graph nodes", "It uses depth-first traversal"], answer: 0 },
+  { question: "What is Dijkstra's algorithm used for?", options: ["Finding shortest paths in a graph", "Sorting edges in a graph", "Constructing a minimum spanning tree", "Finding connected components"], answer: 0 },
+  { question: "What is a connected graph?", options: ["A graph with no edges", "A graph where all vertices are reachable", "A graph with only one vertex", "A graph with weighted edges"], answer: 1 },
+  { question: "What is the time complexity of Dijkstra's algorithm using a priority queue?", options: ["O(n^2)", "O(n log n)", "O(log n)", "O(1)"], answer: 1 },
+  { question: "What is a weighted graph?", options: ["A graph with no direction", "A graph where edges have weights", "A graph with only one vertex", "A graph with cycles"], answer: 1 },
+  { question: "What is a cycle in a graph?", options: ["A path that visits all vertices", "A path that starts and ends at the same vertex", "A disconnected graph", "A directed edge"], answer: 1 },
+  { question: "What is a directed acyclic graph (DAG)?", options: ["A graph with cycles", "A directed graph with no cycles", "A tree with weighted edges", "A graph with only one edge"], answer: 1 },
+  { question: "What is topological sorting?", options: ["Sorting nodes in a graph", "Sorting vertices in linear order", "Sorting a binary tree", "Sorting edges in a graph"], answer: 1 },
+  { question: "What is a dequeue?", options: ["A double-ended queue", "A stack implementation", "A linked list", "A priority queue"], answer: 0 },
+  { question: "What is the main feature of a circular linked list?", options: ["It is always sorted", "The last node points to the first node", "It has no head node", "It has only one node"], answer: 1 },
+  { question: "What is the time complexity of inserting into a linked list?", options: ["O(1)", "O(log n)", "O(n)", "O(n^2)"], answer: 0 },
+  { question: "What is the main advantage of a linked list over an array?", options: ["Faster sorting", "Dynamic memory allocation", "Sequential access only", "Fixed size"], answer: 1 },
+  { question: "Which operation in a linked list has O(1) time complexity?", options: ["Insertion at the beginning", "Insertion at the end", "Traversal", "Deletion from the middle"], answer: 0 },
+  { question: "What is a doubly linked list?", options: ["A list with a single pointer per node", "A list where each node points to both its previous and next nodes", "A circular list", "A list with multiple heads"], answer: 1 },
+  { question: "What is the time complexity of deleting a node in a doubly linked list?", options: ["O(1)", "O(n)", "O(log n)", "O(n^2)"], answer: 1 },
+  { question: "What is a sentinel node in a linked list?", options: ["The head node", "A dummy node used to simplify boundary conditions", "The last node", "A node used for sorting"], answer: 1 },
+  { question: "What is the main feature of a binary search tree (BST)?", options: ["Each node has at most two children", "All left descendants are smaller, and right descendants are larger", "It is a complete tree", "It is always balanced"], answer: 1 },
+  { question: "What is a balanced binary tree?", options: ["A tree with equal numbers of nodes on each side", "A tree where the height difference of subtrees is at most one", "A tree with sorted elements", "A tree with only one child per node"], answer: 1 },
+  { question: "What is the time complexity of inserting an element into a balanced binary search tree?", options: ["O(n)", "O(log n)", "O(n^2)", "O(1)"], answer: 1 },
+  { question: "What is an AVL tree?", options: ["A type of binary search tree that is self-balancing", "A tree with only one child per node", "A graph representation", "A complete binary tree"], answer: 0 },
+  { question: "What is the maximum height difference allowed in an AVL tree?", options: ["1", "2", "3", "No limit"], answer: 0 },
+  { question: "What is the purpose of rotation in an AVL tree?", options: ["To delete nodes", "To balance the tree", "To traverse nodes", "To sort elements"], answer: 1 },
+  { question: "What is a red-black tree?", options: ["A type of binary tree with color-coded nodes for balancing", "A tree with only red edges", "A graph with weighted edges", "A circular tree"], answer: 0 },
+  { question: "What is the height of a red-black tree with n nodes?", options: ["O(log n)", "O(n)", "O(n^2)", "O(1)"], answer: 0 },
+  { question: "What is a B-tree?", options: ["A self-balancing search tree for disk storage", "A binary search tree", "A tree with no leaves", "A graph representation"], answer: 0 },
+  { question: "What is the order of a B-tree?", options: ["The maximum number of children a node can have", "The depth of the tree", "The number of leaves", "The height of the tree"], answer: 0 },
+  { question: "What is a heap sort algorithm?", options: ["A comparison-based sorting algorithm using a binary heap", "A traversal algorithm", "A searching algorithm", "A graph sorting method"], answer: 0 },
+  { question: "What is the time complexity of heapify in a heap?", options: ["O(log n)", "O(n)", "O(n^2)", "O(1)"], answer: 0 },
+  { question: "What is the main feature of a Fibonacci heap?", options: ["Fast insertion and deletion", "Improved amortized time complexity for decrease-key operations", "Sequential access", "Sorting capability"], answer: 1 },
+  { question: "What is a trie data structure?", options: ["A tree for storing strings", "A tree with fixed height", "A binary search tree", "A heap structure"], answer: 0 },
+  { question: "What is the space complexity of a trie with n strings?", options: ["O(n)", "O(n * m)", "O(log n)", "O(1)"], answer: 1 },
+  { question: "What is the purpose of a disjoint set?", options: ["To manage connected components", "To implement sorting", "To traverse graphs", "To represent a binary tree"], answer: 0 },
+  { question: "What is the union operation in a disjoint set?", options: ["Merging two sets", "Finding the representative element", "Deleting a set", "Sorting elements"], answer: 0 },
+  { question: "What is the path compression technique?", options: ["Flattening the structure of a disjoint set", "Finding the shortest path", "Compressing tree height", "Optimizing graph traversal"], answer: 0 },
+  { question: "What is the main feature of a hash map?", options: ["It allows duplicate keys", "It provides O(1) average time complexity for operations", "It stores elements sequentially", "It is implemented as a graph"], answer: 1 },
+  { question: "What is an open addressing technique?", options: ["Storing elements in linked lists", "Resolving hash collisions by probing", "Sorting hash values", "Using separate chaining"], answer: 1 },
+  { question: "What is a binary heap?", options: ["A complete binary tree that satisfies the heap property", "A tree with only one child per node", "A graph representation", "A self-balancing tree"], answer: 0 },
+  { question: "What is a max heap property?", options: ["The root is the largest element", "The root is the smallest element", "All leaves are greater than the root", "The heap is unsorted"], answer: 0 },
+  { question: "What is the main difference between a queue and a stack?", options: ["A queue is FIFO, while a stack is LIFO", "A queue is sorted", "A stack allows random access", "A queue is static"], answer: 0 },
+  { question: "What is a self-referential structure?", options: ["A structure containing pointers to itself", "A tree with no children", "A graph with cycles", "A heap structure"], answer: 0 },
+  { question: "What is a sparse matrix?", options: ["A matrix with many zero entries", "A matrix with only one row", "A matrix with no zero entries", "A graph representation"], answer: 0 },
+  { question: "What is the time complexity of searching in a hash table?", options: ["O(1)", "O(n)", "O(log n)", "O(n^2)"], answer: 0 },
+  { question: "What is the purpose of adjacency list representation in graphs?", options: ["Efficiently represent sparse graphs", "Represent complete graphs", "Store weighted edges", "Sort graph nodes"], answer: 0 },
+  { question: "What is a weighted adjacency matrix?", options: ["A matrix with weights assigned to edges", "A matrix with no weights", "A tree representation", "A binary heap"], answer: 0 },
+  { question: "What is the purpose of Floyd-Warshall algorithm?", options: ["Finding shortest paths between all pairs of vertices", "Finding minimum spanning tree", "Sorting edges", "Balancing binary trees"], answer: 0 },
+  { question: "What is the main feature of dynamic programming?", options: ["Breaking problems into overlapping subproblems", "Recursive traversal", "Greedy selection", "Graph traversal"], answer: 0 },
+  { question: "What is the purpose of a backtracking algorithm?", options: ["To solve problems by exploring all possibilities", "To traverse graphs", "To sort data", "To search in binary trees"], answer: 0 },
+  { question: "What is the complexity of binary search?", options: ["O(log n)", "O(n)", "O(n^2)", "O(1)"], answer: 0 },
+  { question: "What is a breadth-first search used for in graphs?", options: ["Exploring graph level by level", "Finding cycles", "Sorting nodes", "Balancing trees"], answer: 0 },
+  { question: "What is the purpose of the Bellman-Ford algorithm?", options: ["Finding shortest paths in a graph with negative weights", "Sorting graph nodes", "Finding minimum spanning tree", "Balancing binary trees"], answer: 0 },
+  { question: "What is a binary tree traversal?", options: ["Visiting all nodes in a binary tree", "Sorting nodes", "Searching nodes", "Deleting nodes"], answer: 0 },
+  { question: "What is the key feature of Kruskal's algorithm?", options: ["Sort edges by weight", "Traverse nodes in a tree", "Find shortest paths", "Balance a graph"], answer: 0 },
+  { question: "What is a Fibonacci heap used for?", options: ["Efficient priority queue operations", "Sorting data", "Traversing graphs", "Finding minimum spanning tree"], answer: 0 },
+  { question: "What is a greedy algorithm?", options: ["An algorithm that makes the locally optimal choice", "A backtracking algorithm", "A recursive sorting method", "A graph traversal technique"], answer: 0 },
+  { question: "What is the purpose of adjacency list representation?", options: ["Efficient storage of sparse graphs", "Sorting graph nodes", "Representing binary trees", "Storing weighted edges"], answer: 0 },
+  { question: "What is the space complexity of adjacency matrix representation?", options: ["O(V^2)", "O(V)", "O(E)", "O(log V)"], answer: 0 },
+  { question: "What is a dynamic array?", options: ["An array that can resize dynamically", "A fixed-size array", "A linked list", "A graph representation"], answer: 0 },
+  { question: "What is the time complexity of adding an element to a dynamic array?", options: ["O(1)", "O(log n)", "O(n)", "O(n^2)"], answer: 0 }
+    ];
+
+    const selectedQuestions = [];
+    let currentQuestionIndex = 0;
+    const selectedAnswers = new Array(30).fill(null);
+    const timerElement = document.getElementById("timer");
+    let timerInterval;
+
+    // Randomly select 30 questions
+    function selectRandomQuestions() {
+      const shuffled = allQuestions.sort(() => 0.5 - Math.random());
+      selectedQuestions.push(...shuffled.slice(0, 30));
+    }
+
+    // Render the current question
+    function renderQuestion(index) {
+      const questionElement = document.getElementById("question");
+      const optionsElement = document.getElementById("options");
+      const currentQuestion = selectedQuestions[index];
+
+      questionElement.textContent = `Q${index + 1}: ${currentQuestion.question}`;
+      optionsElement.innerHTML = "";
+
+      currentQuestion.options.forEach((option, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <label>
+            <input type="radio" name="option" value="${i}" ${selectedAnswers[index] === i ? "checked" : ""}>
+            ${option}
+          </label>`;
+        optionsElement.appendChild(li);
+      });
+
+      updateButtons();
+    }
+
+    // Render question navigation
+    function renderNavigation() {
+      const navElement = document.getElementById("questionNav");
+      navElement.innerHTML = "";
+
+      selectedQuestions.forEach((_, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = i + 1;
+        btn.classList.toggle("answered", selectedAnswers[i] !== null);
+        btn.addEventListener("click", () => {
+          saveAnswer();
+          currentQuestionIndex = i;
+          renderQuestion(currentQuestionIndex);
+        });
+        navElement.appendChild(btn);
+      });
+    }
+
+    // Save selected answer
+    function saveAnswer() {
+      const selectedOption = document.querySelector("input[name='option']:checked");
+      selectedAnswers[currentQuestionIndex] = selectedOption ? parseInt(selectedOption.value) : null;
+      saveQuizData();
+    }
+
+    // Save quiz data to local storage
+    function saveQuizData() {
+      const quizData = selectedQuestions.map((q, i) => ({
+        question: q.question,
+        options: q.options,
+        selected: selectedAnswers[i],
+        correct: q.answer,
+      }));
+      localStorage.setItem("quizData", JSON.stringify(quizData));
+    }
+
+    // Calculate the quiz score
+    function calculateScore() {
+      return selectedQuestions.reduce((score, q, i) => {
+        return score + (selectedAnswers[i] === q.answer ? 1 : 0);
+      }, 0);
+    }
+
+    // Submit the quiz
+    function submitQuiz() {
+      saveAnswer();
+      clearInterval(timerInterval); // Stop the timer
+      showModal(); // Show the completion modal
+      const score = calculateScore();
+      localStorage.setItem("quizScore", score); // Save score
+    }
+
+    // Timer functionality
+    function startTimer(duration) {
+      let timer = duration;
+      timerInterval = setInterval(() => {
+        const minutes = Math.floor(timer / 60);
+        const seconds = timer % 60;
+
+        timerElement.textContent = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+
+        if (--timer < 0) {
+          clearInterval(timerInterval);
+          submitQuiz(); // Auto-submit on timeout
+        }
+      }, 1000);
+    }
+
+    // Show modal
+    function showModal() {
+      document.getElementById("modalOverlay").style.display = "block";
+      document.getElementById("quizModal").style.display = "block";
+    }
+
+    // Hide modal
+    function hideModal() {
+      document.getElementById("modalOverlay").style.display = "none";
+      document.getElementById("quizModal").style.display = "none";
+    }
+
+    // Update button visibility
+    function updateButtons() {
+        const prevButton = document.getElementById("prev");
+      const nextButton = document.getElementById("next");
+      const submitButton = document.getElementById("submit");
+
+      prevButton.style.display = currentQuestionIndex === 0 ? "none" : "inline-block";
+      nextButton.style.display = currentQuestionIndex === selectedQuestions.length - 1 ? "none" : "inline-block";
+      submitButton.style.display = currentQuestionIndex === selectedQuestions.length - 1 ? "inline-block" : "none";
+    }
+
+    // Event listeners for navigation buttons
+    document.getElementById("next").addEventListener("click", () => {
+      saveAnswer();
+      currentQuestionIndex++;
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+    });
+
+    document.getElementById("prev").addEventListener("click", () => {
+      saveAnswer();
+      currentQuestionIndex--;
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+    });
+
+    document.getElementById("submit").addEventListener("click", submitQuiz);
+
+    document.getElementById("viewScoreButton").addEventListener("click", () => {
+  window.location.href = "score.html"; // Redirect to score.html
+});
+    // Initialize the quiz
+    function initQuiz() {
+      selectRandomQuestions();
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+      startTimer(25 * 60); // Start a 25-minute timer
+    }
+
+    // Initialize quiz on page load
+    window.onload = initQuiz;
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #D2E2DF;
+    color: #006400;
+}
+
+.header {
+    text-align: center;
+    padding: 20px;
+    background-color: #4D605E;
+    color: #fff;
+}
+
+.search-bar {
+    margin: 20px auto;
+    width: 50%;
+    display: flex;
+    justify-content: center;
+}
+
+.search-bar input {
+    width: 80%;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #4D605E;
+    border-radius: 54px;
+    outline: none;
+}
+
+.search-bar button {
+    padding: 10px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #4D605E;
+    border: none;
+    border-radius: 54px;
+    cursor: pointer;
+}
+
+.notes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    text-align: center;
+}
+
+.note-card {
+    background-color: #EEFAF8;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.note-card h3 {
+    margin: 10px 0;
+    color: #4D605E;
+}
+
+.note-card p {
+    font-size: 14px;
+    color: #333;
+}
+
+.note-card a {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #4D605E;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.note-card a:hover {
+    background-color: #4D605E;
+}
+
+.no-results {
+    text-align: center;
+    color: #cc0000;
+    font-size: 18px;
+    margin-top: 20px;
+}
+    </style>
+    <title>Summaries</title>
+</head>
+<body>
+    <div class="header">
+        <h1>Courses Summaries</h1>
+        <p>Download course summary to ease study</p>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" id="search" placeholder="Search for course summaries...">
+        <button onclick="searchNotes()">Search</button>
+    </div>
+
+    <div class="notes" id="notes"></div>
+
+    <script>
+        // Lecture Notes Data
+const notes = [
+    { title: "CSC 201 Lecture Note", description: "Computer programming 1", url: "https://example.com/CSC201_Part1.pdf", uploadDate: "2024-12-01" },
+    { title: "CSC 203 Lecture Note", description: "Fundamentals of Sequential Program", url: "https://example.com/CSC202_Part2.pdf", uploadDate: "2024-12-03" },
+    { title: "CSC 202 Lecture Note", description: "Computer Programming 2", url: "https://example.com/CSC203_Part1.pdf", uploadDate: "2024-12-05" },
+    { title: "CSC 201 Lecture Note - Part 1", description: "Covers the basics of data structures and algorithms.", url: "https://example.com/CSC201_Part1.pdf", uploadDate: "2024-12-01" },
+    { title: "CSC 202 Lecture Note - Part 2", description: "Advanced topics in sorting and searching algorithms.", url: "https://example.com/CSC202_Part2.pdf", uploadDate: "2024-12-03" },
+    { title: "CSC 203 Lecture Note - Part 1", description: "Introduction to programming paradigms.", url: "https://example.com/CSC203_Part1.pdf", uploadDate: "2024-12-05" },
+    { title: "CSC 201 Lecture Note - Part 1", description: "Covers the basics of data structures and algorithms.", url: "https://example.com/CSC201_Part1.pdf", uploadDate: "2024-12-01" },
+    { title: "CSC 202 Lecture Note - Part 2", description: "Advanced topics in sorting and searching algorithms.", url: "https://example.com/CSC202_Part2.pdf", uploadDate: "2024-12-03" },
+    { title: "CSC 203 Lecture Note - Part 1", description: "Introduction to programming paradigms.", url: "https://example.com/CSC203_Part1.pdf", uploadDate: "2024-12-05" },
+    { title: "CSC 201 Lecture Note", description: "Computer programming 1", url: "https://example.com/CSC201_Part1.pdf", uploadDate: "2024-12-01" },
+    { title: "CSC 203 Lecture Note", description: "Fundamentals of Sequential Program", url: "https://example.com/CSC202_Part2.pdf", uploadDate: "2024-12-03" },
+    { title: "CSC 202 Lecture Note", description: "Computer Programming 2", url: "https://example.com/CSC203_Part1.pdf", uploadDate: "2024-12-05" },
+    { title: "CSC 201 Lecture Note - Part 1", description: "Covers the basics of data structures and algorithms.", url: "https://example.com/CSC201_Part1.pdf", uploadDate: "2024-12-01" },
+    { title: "CSC 202 Lecture Note - Part 2", description: "Advanced topics in sorting and searching algorithms.", url: "https://example.com/CSC202_Part2.pdf", uploadDate: "2024-12-03" },
+    { title: "CSC 203 Lecture Note - Part 1", description: "Introduction to programming paradigms.", url: "https://example.com/CSC203_Part1.pdf", uploadDate: "2024-12-05" },
+    { title: "CSC 201 Lecture Note - Part 1", description: "Covers the basics of data structures and algorithms.", url: "https://example.com/CSC201_Part1.pdf", uploadDate: "2024-12-01" },
+    { title: "CSC 202 Lecture Note - Part 2", description: "Advanced topics in sorting and searching algorithms.", url: "https://example.com/CSC202_Part2.pdf", uploadDate: "2024-12-03" },
+    { title: "CSC 203 Lecture Note - Part 1", description: "Introduction to programming paradigms.", url: "https://example.com/CSC203_Part1.pdf", uploadDate: "2024-12-05" },
+    { title: "CSC 201 Lecture Note", description: "Computer programming 1", url: "https://example.com/CSC201_Part1.pdf", uploadDate: "2024-12-01" },
+    { title: "CSC 203 Lecture Note", description: "Fundamentals of Sequential Program", url: "https://example.com/CSC202_Part2.pdf", uploadDate: "2024-12-03" },
+    { title: "CSC 202 Lecture Note", description: "Computer Programming 2", url: "https://example.com/CSC203_Part1.pdf", uploadDate: "2024-12-05" },
+    { title: "CSC 201 Lecture Note - Part 1", description: "Covers the basics of data structures and algorithms.", url: "https://example.com/CSC201_Part1.pdf", uploadDate: "2024-12-01" },
+    { title: "CSC 202 Lecture Note - Part 2", description: "Advanced topics in sorting and searching algorithms.", url: "https://example.com/CSC202_Part2.pdf", uploadDate: "2024-12-03" },
+    { title: "CSC 203 Lecture Note - Part 1", description: "Introduction to programming paradigms.", url: "https://example.com/CSC203_Part1.pdf", uploadDate: "2024-12-05" },
+    { title: "CSC 201 Lecture Note - Part 1", description: "Covers the basics of data structures and algorithms.", url: "https://example.com/CSC201_Part1.pdf", uploadDate: "2024-12-01" },
+    { title: "CSC 202 Lecture Note - Part 2", description: "Advanced topics in sorting and searching algorithms.", url: "https://example.com/CSC202_Part2.pdf", uploadDate: "2024-12-03" },
+    { title: "CSC 203 Lecture Note - Part 1", description: "Introduction to programming paradigms.", url: "https://example.com/CSC203_Part1.pdf", uploadDate: "2024-12-05" }
+];
+
+// Utility function to shuffle an array
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+// Display Lecture Notes
+const notesContainer = document.getElementById('notes');
+
+function displayNotes(noteList) {
+    notesContainer.innerHTML = '';
+    if (noteList.length === 0) {
+        // Display message if no results are found
+        notesContainer.innerHTML = '<p class="no-results">Not found. Try a different search term.</p>';
+        return;
+    }
+    noteList.forEach(note => {
+        const noteCard = document.createElement('div');
+        noteCard.classList.add('note-card');
+
+        noteCard.innerHTML = `
+            <h3>${note.title}</h3>
+            <p>${note.description}</p>
+            <p><small>Uploaded on: ${note.uploadDate}</small></p>
+            <a href="${note.url}" download>Download</a>
+        `;
+
+        notesContainer.appendChild(noteCard);
+    });
+}
+
+// Initial Display with Shuffle and Limit
+function loadNotes() {
+    const shuffledNotes = shuffleArray([...notes]);
+    const limitedNotes = shuffledNotes.slice(0, 20);
+    displayNotes(limitedNotes);
+}
+
+// Search Functionality
+function searchNotes() {
+    const searchText = document.getElementById('search').value.toLowerCase();
+    const filteredNotes = notes.filter(note => note.title.toLowerCase().includes(searchText));
+    displayNotes(filteredNotes);
+}
+
+// Load initial notes
+loadNotes();
+    </script>
+</body>
+</html>

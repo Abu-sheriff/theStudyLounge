@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reminder Settings</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #D2E2DF;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #4D605E;
+    }
+    .container {
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #EEFAF8;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+    .reminder-item {
+      margin-bottom: 15px;
+    }
+    .day-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="time"], input[type="text"], select, button {
+      width: 90%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    button {
+      background-color: #4D605E;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #3B4F4C;
+    }
+    .reminder-list ul {
+      list-style: none;
+      padding: 0;
+    }
+    .reminder-list li {
+      margin: 10px 0;
+      padding: 15px;
+      background-color: #f1f8f6;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .delete-btn {
+      background-color: #6a0602;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .delete-btn:hover {
+      background-color: #af0505;
+    }
+    .edit-btn {
+      background-color: #02386d;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-right: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .edit-btn:hover {
+      background-color: #0d47a1;
+    }
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+    .modal-content h3 {
+      margin: 0 0 10px;
+      color: #4D605E;
+    }
+    .modal-content button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #4D605E;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .modal-content button:hover {
+      background-color: #3B4F4C;
+    }
+    /* Mobile Styles */
+    @media (max-width: 600px) {
+      .container {
+        width: 90%;
+      }
+      button, input, select {
+        font-size: 14px;
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>Plan your study sessions efficiently!</h2>
+  <div class="container">
+    <div class="day-group">
+      <label for="day">Set Day</label>
+      <select id="day">
+        <option value="mon">Monday</option>
+        <option value="tue">Tuesday</option>
+        <option value="wed">Wednesday</option>
+        <option value="thur">Thursday</option>
+        <option value="fri">Friday</option>
+        <option value="sat">Saturday</option>
+        <option value="sun">Sunday</option>
+      </select>
+    </div>
+    <div class="reminder-item">
+      <label for="reminderTime">Set Reminder Time:</label>
+      <input type="time" id="reminderTime">
+    </div>
+    <div class="reminder-item">
+      <label for="reminderDescription">Reminder Description:</label>
+      <input type="text" id="reminderDescription" placeholder="E.g., Study hour">
+    </div>
+    <button onclick="saveReminder()">Save Reminder</button>
+  </div>
+
+  <div class="container reminder-list">
+    <h2>Your Reminders</h2>
+    <ul id="reminderDisplay"></ul>
+  </div>
+
+  <!-- Modal -->
+  <div id="successModal" class="modal">
+    <div class="modal-content">
+      <h3>Reminder Saved Successfully✓!</h3>
+      <button onclick="closeModal()">Ok</button>
+    </div>
+  </div>
+
+<script>
+  // Save Reminder
+  function saveReminder() {
+    const day = document.getElementById("day").value;
+    const reminderTime = document.getElementById("reminderTime").value;
+    const description = document.getElementById("reminderDescription").value;
+
+    if (!reminderTime || !description) {
+      alert("Please set a reminder time and description.");
+      return;
+    }
+
+    const reminders = JSON.parse(localStorage.getItem("reminders")) || [];
+    reminders.push({ day, time: reminderTime, description });
+    localStorage.setItem("reminders", JSON.stringify(reminders));
+    displayReminders();
+    showModal(); // Show modal on success
+  }
+
+  // Display Reminders
+  function displayReminders() {
+    const reminders = JSON.parse(localStorage.getItem("reminders")) || [];
+    const reminderDisplay = document.getElementById("reminderDisplay");
+
+    if (reminders.length === 0) {
+      reminderDisplay.innerHTML = "<p>No reminders set yet!</p>";
+      return;
+    }
+
+    reminderDisplay.innerHTML = reminders.map(
+      (reminder, index) =>
+        `<li>${reminder.day.toUpperCase()} - ${reminder.time} - ${reminder.description} 
+          <button class="edit-btn" onclick="editReminder(${index})">Edit</button>
+          <button class="delete-btn" onclick="deleteReminder(${index})">Delete</button>
+        </li>`
+    ).join("");
+  }
+
+  // Edit Reminder
+  function editReminder(index) {
+    const reminders = JSON.parse(localStorage.getItem("reminders")) || [];
+    const reminder = reminders[index];
+    document.getElementById("day").value = reminder.day;
+    document.getElementById("reminderTime").value = reminder.time;
+    document.getElementById("reminderDescription").value = reminder.description;
+    deleteReminder(index); // Remove old reminder before saving the new one
+  }
+
+  // Delete Reminder
+  function deleteReminder(index) {
+    const reminders = JSON.parse(localStorage.getItem("reminders")) || [];
+    reminders.splice(index, 1);
+    localStorage.setItem("reminders", JSON.stringify(reminders));
+    displayReminders();
+  }
+
+  // Show Modal
+  function showModal() {
+    const modal = document.getElementById("successModal");
+    modal.style.display = "flex";
+  }
+
+  // Close Modal
+  function closeModal() {
+    const modal = document.getElementById("successModal");
+    modal.style.display = "none";
+  }
+
+  // Request Notification Permission
+  function requestNotificationPermission() {
+    if ("Notification" in window && Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+  }
+
+  // Show Notification
+  function showNotification(title, message) {
+    if (Notification.permission === "granted") {
+      const audio = new Audio("notification.mp3");
+      audio.play();
+      new Notification(title, { body: message });
+    }
+  }
+
+  // Check Reminders
+  function checkReminders() {
+    const reminders = JSON.parse(localStorage.getItem("reminders")) || [];
+    const now = new Date();
+    const currentTime = now.toTimeString().slice(0, 5); // Format: HH:MM
+    const currentDay = ["sun", "mon", "tue", "wed", "thur", "fri", "sat"][now.getDay()];
+
+    reminders.forEach((reminder, index) => {
+      if (reminder.time === currentTime && reminder.day === currentDay) {
+        showNotification("The Study Lounge", reminder.description);
+        reminders.splice(index, 1); // Remove reminder after triggering
+        localStorage.setItem("reminders", JSON.stringify(reminders));
+        displayReminders();
+      }
+    });
+  }
+
+  // Initialize
+  function init() {
+    requestNotificationPermission();
+    displayReminders();
+    setInterval(checkReminders, 60000); // Check every minute
+  }
+
+  window.onload = init;
+</script>
+</body>
+</html>

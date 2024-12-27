@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile Setup</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #D2E2DF;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 800px;
+      margin: 20px auto;
+      background-color: #EEFAF8;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Header */
+    header h1 {
+      font-size: 1.5em;
+      text-align: center;
+      color: #4D605E;
+      margin-bottom: 10px;
+    }
+
+    /* Skip Section */
+    .skip-section {
+      text-align: right;
+    }
+
+    .skip-button {
+      background-color: transparent;
+      border: none;
+      color: #7d1e9d;
+      font-size: 0.9em;
+      cursor: pointer;
+    }
+
+    /* Form Styles */
+    .profile-form .form-group {
+      margin-bottom: 15px;
+    }
+
+    .profile-form label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .profile-form input,
+    .profile-form select,
+    .profile-form textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .profile-form textarea {
+      resize: none;
+    }
+
+    .edit-section .edit-button {
+      background-color: #4D605E;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    .submit-button {
+      background-color: #4D605E;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .icon {
+      margin-right: 5px;
+    }
+
+    /* Pop-up Styles */
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      text-align: center;
+      display: none;
+    }
+
+    .popup h2 {
+      font-size: 1.2em;
+      color: #028f1e;
+      margin-bottom: 10px;
+    }
+
+    .popup button {
+      background-color: #028f1e;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100px;
+    }
+
+    /* Profile Picture Styling */
+    #profile-pic {
+      display: block;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>My Profile</h1>
+    </header>
+
+    <div class="skip-section">
+      <a href="index.html"><button class="skip-button">Home</button></a>
+    </div>
+
+    <form class="profile-form">
+      <!-- Name -->
+      <div class="form-group">
+        <label for="name">
+          <i class="icon user-icon"></i> Name
+        </label>
+        <input type="text" id="name" placeholder="Enter your full name" required>
+      </div>
+
+      <!-- Username -->
+      <div class="form-group">
+        <label for="username">
+          <i class="icon user-icon"></i> Username
+        </label>
+        <input type="text" id="username" placeholder="Username" required>
+      </div>
+
+      <!-- Phone Number -->
+      <div class="form-group">
+        <label for="phone">
+          <i class="icon phone-icon"></i> Phone Number
+        </label>
+        <input type="tel" id="phone" placeholder="Phone Number" required>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">
+          <i class="icon email-icon"></i> Email
+        </label>
+        <input type="email" id="email" placeholder="Email" required>
+      </div>
+
+      <!-- Institution -->
+      <div class="form-group">
+        <label for="institution">Your Institution</label>
+        <select id="institution">
+          <option value="University of Maiduguri">University of Maiduguri</option>
+          <option value="Borno State University">Borno State University</option>
+        </select>
+      </div>
+      
+      <!-- Department -->
+      <div class="form-group">
+        <label for="department">Department</label>
+        <select id="department" required>
+          <option value="Computer Science">Computer Science</option>
+          <option value="Mathematics">Mathematics</option>
+          <option value="Statistics">Statistics</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      
+      <!-- Level -->
+      <div class="form-group">
+        <label for="level">Level</label>
+        <select id="level" required>
+          <option value="100">100 Level</option>
+          <option value="200">200 Level</option>
+          <option value="300">300 Level</option>
+          <option value="400">400 Level</option>
+        </select>
+      </div>
+      
+      <!-- Gender -->
+      <div class="form-group">
+        <label for="gender">Gender</label>
+        <select id="gender">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <!-- Type -->
+      <div class="form-group">
+        <label for="type">Type</label>
+        <select id="type">
+          <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <!-- Subjects -->
+      <div class="form-group">
+        <label for="subjects">Your Subjects [optional]</label>
+        <div class="edit-section">
+          <button type="button" class="edit-button">Edit</button>
+        </div>
+      </div>
+
+      <!-- Date of Birth -->
+      <div class="form-group">
+        <label for="dob">Date of Birth</label>
+        <input type="date" id="dob">
+      </div>
+
+      <!-- Profile Picture -->
+      <div class="form-group">
+        <label for="profile-pic">Upload Profile Picture</label>
+        <input type="file" id="profile-pic">
+      </div>
+
+      <!-- Bio -->
+      <div class="form-group">
+        <label for="bio">Bio [optional]</label>
+        <textarea id="bio" rows="3" placeholder="Write something about yourself..."></textarea>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="form-group">
+        <button type="submit" class="submit-button">Save Profile</button>      
+      </div>
+    </form>
+  </div>
+
+  <!-- Pop-up Container -->
+  <div class="popup" id="popup">
+    <h2>Profile saved successfully✓</h2>
+    <button id="popupOk">OK</button>
+  </div>
+
+<script>
+  document.querySelector(".profile-form").addEventListener("submit", function (event) {
+    event.preventDefault(); // Prevent form from refreshing the page
+
+    // Get all form values
+    const profileData = {
+      name: document.getElementById("name").value,
+      username: document.getElementById("username").value,
+      phone: document.getElementById("phone").value,
+      email: document.getElementById("email").value,
+      institution: document.getElementById("institution").value,
+      department: document.getElementById("department").value,
+      level: document.getElementById("level").value,
+      gender: document.getElementById("gender").value,
+      type: document.getElementById("type").value,
+      dob: document.getElementById("dob").value,
+      bio: document.getElementById("bio").value,
+    };
+
+    // Handle profile picture separately
+    const profilePicInput = document.getElementById("profile-pic");
+    if (profilePicInput.files.length > 0) {
+      const fileReader = new FileReader();
+      fileReader.onload = function () {
+        profileData.profilePic = fileReader.result;
+
+        // Save to localStorage
+        localStorage.setItem("profileData", JSON.stringify(profileData));
+
+        // Proceed to send data to Formspree
+        sendToFormspree(profileData);
+      };
+      fileReader.readAsDataURL(profilePicInput.files[0]);
+    } else {
+      // No profile picture; proceed directly
+      localStorage.setItem("profileData", JSON.stringify(profileData));
+      sendToFormspree(profileData);
+    }
+  });
+
+  function sendToFormspree(profileData) {
+    // Create data object excluding profilePic
+    const formspreeData = {
+      name: profileData.name,
+      username: profileData.username,
+      phone: profileData.phone,
+      email: profileData.email,
+      institution: profileData.institution,
+      department: profileData.department,
+      level: profileData.level,
+      gender: profileData.gender,
+      type: profileData.type,
+      dob: profileData.dob,
+      bio: profileData.bio,
+    };
+
+    // Send data to Formspree
+    fetch("https://formspree.io/f/mzzbqbdr", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formspreeData),
+    })
+      .then((response) => {
+        if (response.ok) {
+          // Show pop-up
+          const popup = document.getElementById("popup");
+          popup.style.display = "block";
+
+          // Navigate to main.html when OK is clicked
+          document.getElementById("popupOk").addEventListener("click", function () {
+            window.location.href = "index.html";
+          });
+        } else {
+          alert("Failed to send data. Please try again.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("An error occurred. Please check your internet connection and try again.");
+      });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoungeQuizzing</title>
+  <style>
+    /* General Styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #D2E2DF;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      color: #4D605E;
+      font-size: 2rem;
+    }
+
+    .quiz-container {
+      background-color: #EEFAF8;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .timer {
+      text-align: right;
+      font-size: 1.2rem;
+      color: red;
+      margin-bottom: 10px;
+    }
+
+    .question {
+      margin: 15px 0;
+    }
+
+    .options {
+      list-style: none;
+      padding: 0;
+    }
+
+    .options li {
+      margin: 10px 0;
+    }
+
+    .options input[type="radio"] {
+      margin-right: 10px;
+    }
+
+    /* Buttons */
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .prev-btn {
+      background-color: #D2E2DF;
+      color: #333;
+      display: none;
+    }
+
+    .next-btn {
+      background-color: #006400;
+      color: #fff;
+    }
+
+    .submit-btn {
+      background-color: #4D605E;
+      color: #fff;
+      display: none;
+    }
+
+    /* Question Navigation */
+    .question-navigation {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+      gap: 5px;
+      margin-top: 20px;
+    }
+
+    .question-navigation button {
+      background-color: #D2E2DF;
+      color: #333;
+      border: 1px solid #4D605E;
+      font-size: 1rem;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
+    .question-navigation button.answered {
+      background-color: #4D605E;
+      color: #fff;
+    }
+
+    /* Media Queries for Responsiveness */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .quiz-container {
+        padding: 15px;
+      }
+
+      button {
+        font-size: 0.95rem;
+        padding: 10px 16px;
+      }
+
+      .timer {
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .quiz-container {
+        padding: 10px;
+      }
+
+      .timer {
+        font-size: 0.9rem;
+      }
+
+      button {
+        font-size: 0.9rem;
+        padding: 8px 14px;
+      }
+
+      .question-navigation button {
+        font-size: 0.9rem;
+        padding: 6px 8px;
+      }
+    }
+
+    /* Pop-Up Modal Styling */
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      text-align: center;
+      z-index: 1000;
+      display: none;
+    }
+
+    .modal h2 {
+      color: #4D605E;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+
+    .modal button {
+      background-color: #006400;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .modal button:hover {
+      background-color: #004d00;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>LoungeQuizzing</h1>
+  </header>
+  <div class="quiz-container">
+    <div class="timer" id="timer">25:00</div>
+    <div class="question" id="question">Question will appear here</div>
+    <ul class="options" id="options"></ul>
+
+    <div class="buttons">
+      <button class="prev-btn" id="prev">Previous</button>
+      <button class="next-btn" id="next">Next</button>
+      <button class="submit-btn" id="submit">Submit</button>
+    </div>
+
+    <div class="question-navigation" id="questionNav"></div>
+  </div>
+  <div class="modal-overlay" id="modalOverlay"></div>
+  <div class="modal" id="quizModal">
+    <h2>Quiz Completed</h2>
+    <button id="viewScoreButton">View Score</button>
+  </div>
+
+  <script>
+    // Initialize quiz data
+    const allQuestions = [
+  { question: "What is an operating system?", options: ["A hardware component", "A set of programs managing hardware and software resources", "A programming language", "A compiler"], answer: 1 },
+  { question: "Who developed MS-DOS?", options: ["IBM", "Microsoft", "Apple", "Sun Microsystems"], answer: 1 },
+  { question: "What was the first version of Windows NT?", options: ["NT 4.0", "NT 3.1", "Windows 95", "Windows 2000"], answer: 1 },
+  { question: "What is the purpose of Active Directory in Windows 2000?", options: ["Managing files", "Managing distributed directory services", "Controlling hardware", "Compiling code"], answer: 1 },
+  { question: "What does an operating system primarily act as?", options: ["An interface between user and hardware", "A compiler for programming languages", "A file management system", "A device driver"], answer: 0 },
+  { question: "Which of the following is an example of an operating system?", options: ["Python", "UNIX", "Oracle", "Java"], answer: 1 },
+  { question: "What are the two main goals of an operating system?", options: ["Speed and memory usage", "Convenience and efficient hardware usage", "Program execution and hardware production", "Error handling and system calls"], answer: 1 },
+  { question: "What are the two types of software?", options: ["System and application software", "Hardware and firmware", "Programs and applications", "Shell and kernel"], answer: 0 },
+  { question: "Which of these is NOT a type of system software?", options: ["Operating System", "Compiler", "Word Processor", "Device Drivers"], answer: 2 },
+  { question: "What is the primary function of a kernel?", options: ["Managing hardware resources", "Interpreting commands", "Creating programs", "Designing hardware"], answer: 0 },
+  { question: "What is a shell in an operating system?", options: ["A program for managing hardware", "A command interpreter for user interaction", "A part of hardware", "An input device"], answer: 1 },
+  { question: "What are the two types of multitasking?", options: ["Static and dynamic", "Cooperative and preemptive", "User and system", "Manual and automatic"], answer: 1 },
+  { question: "Which operating system uses preemptive multitasking?", options: ["Windows 3.x", "MS-DOS", "Windows NT", "Macintosh OS"], answer: 2 },
+  { question: "What does a batch operating system lack?", options: ["Memory management", "CPU utilization", "User interaction", "File management"], answer: 2 },
+  { question: "Which scheduling algorithm processes tasks in first-come, first-served order?", options: ["SJF", "Round Robin", "FCFS", "Priority Scheduling"], answer: 2 },
+  { question: "What is the main feature of a real-time operating system?", options: ["User interaction", "Quick response time", "Batch processing", "Large memory"], answer: 1 },
+  { question: "What is a distributed operating system?", options: ["An OS for embedded systems", "An OS that manages multiple computers as a single system", "A standalone OS", "An OS for single users"], answer: 1 },
+  { question: "Which OS is known for its multi-user capabilities?", options: ["MS-DOS", "Windows NT", "Mac OS", "Android"], answer: 1 },
+  { question: "What is an example of a network operating system?", options: ["UNIX", "Windows Server", "Solaris", "Linux"], answer: 1 },
+  { question: "What is the function of the user interface?", options: ["Allowing users to interact with hardware", "Running background processes", "Controlling memory", "Creating applications"], answer: 0 },
+  { question: "Which of these is an example of a graphical user interface?", options: ["MS-DOS", "Linux CLI", "Windows", "Batch System"], answer: 2 },
+  { question: "What does a command-line interface (CLI) rely on?", options: ["Text commands", "Mouse clicks", "Graphical icons", "Voice commands"], answer: 0 },
+  { question: "What is the first version of Microsoft DOS?", options: ["DOS 2.0", "MS-DOS 7.0", "MS-DOS 1.0", "Windows 3.1"], answer: 2 },
+  { question: "What is the main purpose of a file system?", options: ["Managing memory", "Managing files on storage devices", "Scheduling tasks", "Allocating processors"], answer: 1 },
+  { question: "Which algorithm allocates the CPU to the shortest job first?", options: ["FCFS", "Round Robin", "SJF", "Priority Scheduling"], answer: 2 },
+  { question: "What is a context switch?", options: ["Switching between processes", "Switching memory segments", "Saving a program", "Loading files"], answer: 0 },
+  { question: "What is the primary purpose of virtual memory?", options: ["Storing data on the cloud", "Extending physical memory using disk space", "Increasing CPU speed", "Managing devices"], answer: 1 },
+  { question: "What causes a page fault?", options: ["Memory overflow", "Accessing a page not in memory", "Corrupted data", "Incorrect CPU cycle"], answer: 1 },
+  { question: "Which algorithm replaces the oldest page in memory?", options: ["FIFO", "LRU", "Optimal", "MFU"], answer: 0 },
+  { question: "What is segmentation in memory management?", options: ["Fixed memory blocks", "Variable-length memory blocks", "Overlapping pages", "Equal page size"], answer: 1 },
+  { question: "Which OS uses time-slicing for process scheduling?", options: ["Batch OS", "Real-time OS", "Time-sharing OS", "Distributed OS"], answer: 2 },
+  { question: "What is a thread?", options: ["A process identifier", "A unit of execution within a process", "A scheduling algorithm", "A memory address"], answer: 1 },
+  { question: "What is the role of the Process Control Block (PCB)?", options: ["Managing hardware resources", "Storing process information", "Allocating memory", "Scheduling I/O devices"], answer: 1 },
+  { question: "What is the primary function of a device driver?", options: ["Controlling CPU usage", "Enabling communication between hardware and OS", "Managing files", "Compiling code"], answer: 1 },
+  { question: "What is a critical section in process synchronization?", options: ["A shared resource section", "An isolated process", "A terminated state", "A priority queue"], answer: 0 },
+  { question: "What is the purpose of interprocess communication (IPC)?", options: ["To allow processes to share data", "To schedule processes", "To manage memory", "To store data in files"], answer: 0 },
+  { question: "What is a zombie process?", options: ["A process terminated without releasing resources", "A process waiting for CPU", "A suspended process", "A background process"], answer: 0 },
+  { question: "What is aging in scheduling algorithms?", options: ["Increasing priority of long-waiting jobs", "Reducing memory fragmentation", "Speeding up short jobs", "Managing threads"], answer: 0 },
+  { question: "Which scheduling algorithm divides CPU time into fixed slices?", options: ["FCFS", "Round Robin", "Priority Scheduling", "SJF"], answer: 1 },
+  { question: "What does a multiprogramming OS do?", options: ["Runs a single process", "Executes multiple programs simultaneously", "Executes batch jobs only", "Supports one user at a time"], answer: 1 },
+  { question: "What is the primary goal of a real-time OS?", options: ["Maximizing throughput", "Minimizing response time", "Reducing memory usage", "Improving file access"], answer: 1 },
+  { question: "What is a deadlock?", options: ["A process that runs indefinitely", "A state where processes wait for each other", "A memory overflow", "A terminated process"], answer: 1 },
+  { question: "Which OS uses a kernel as its core?", options: ["Windows", "UNIX", "MacOS", "All of the above"], answer: 3 },
+  { question: "What is the primary purpose of process scheduling?", options: ["To allocate memory", "To determine the order of process execution", "To terminate processes", "To manage I/O devices"], answer: 1 },
+  { question: "What is a semaphore in operating systems?", options: ["A scheduling algorithm", "A variable used for process synchronization", "A hardware component", "A memory block"], answer: 1 },
+  { question: "What are the two types of semaphores?", options: ["Static and dynamic", "Binary and counting", "Hardware and software", "Simple and complex"], answer: 1 },
+  { question: "Which of these causes deadlock?", options: ["Mutual exclusion", "Preemption", "Interrupts", "Multiprocessing"], answer: 0 },
+  { question: "What is starvation in process scheduling?", options: ["A process that waits indefinitely", "A terminated process", "A low-priority process running first", "A process stuck in I/O"], answer: 0 },
+  { question: "What is the purpose of paging in memory management?", options: ["To divide memory into equal fixed-size blocks", "To increase CPU speed", "To manage device drivers", "To allocate large memory"], answer: 0 },
+  { question: "Which of these algorithms replaces the least recently used page?", options: ["FIFO", "Optimal", "LRU", "Round Robin"], answer: 2 },
+  { question: "What is the main advantage of virtual memory?", options: ["It speeds up processes", "It allows programs to run larger than physical memory", "It reduces CPU usage", "It eliminates memory fragmentation"], answer: 1 },
+  { question: "What is the function of the swap space in virtual memory?", options: ["To store data temporarily", "To execute processes", "To allocate CPU time", "To store process information"], answer: 0 },
+  { question: "What is thrashing in memory management?", options: ["Excessive page swapping", "Memory fragmentation", "Low memory usage", "CPU overflow"], answer: 0 },
+  { question: "What is a time slice in Round Robin scheduling?", options: ["A fixed amount of time allocated to a process", "The time taken to complete a job", "The waiting time for a process", "The total execution time"], answer: 0 },
+  { question: "What is the role of a file descriptor?", options: ["It identifies open files", "It allocates memory blocks", "It schedules processes", "It terminates processes"], answer: 0 },
+  { question: "What is spooling in operating systems?", options: ["Managing CPU resources", "Overlapping I/O and CPU processes", "Scheduling batch jobs", "Controlling virtual memory"], answer: 1 },
+  { question: "What is a boot loader?", options: ["A program that loads the OS into memory", "A device driver", "A file management tool", "A hardware component"], answer: 0 },
+  { question: "What is the purpose of interrupts in an operating system?", options: ["To execute programs", "To signal the CPU about an event", "To allocate memory", "To manage I/O devices"], answer: 1 },
+  { question: "What is an I/O bound process?", options: ["A process that spends more time in computation", "A process that spends more time on I/O operations", "A process waiting for memory", "A terminated process"], answer: 1 },
+  { question: "Which of these is a non-preemptive scheduling algorithm?", options: ["FCFS", "Round Robin", "SJF", "Priority Scheduling"], answer: 0 },
+  { question: "What is the purpose of a dispatcher?", options: ["To allocate CPU to processes", "To manage files", "To handle deadlocks", "To terminate processes"], answer: 0 },
+  { question: "What does DMA stand for?", options: ["Direct Memory Access", "Dynamic Memory Allocation", "Disk Management Algorithm", "Data Management Access"], answer: 0 },
+  { question: "What is the main purpose of DMA?", options: ["To transfer data between memory and devices without CPU intervention", "To manage CPU cycles", "To schedule processes", "To allocate memory"], answer: 0 },
+  { question: "What is the function of cache memory?", options: ["To store frequently accessed data", "To increase disk speed", "To manage files", "To allocate virtual memory"], answer: 0 },
+  { question: "What is the function of a system call?", options: ["To interact with the OS kernel", "To execute user programs", "To handle interrupts", "To allocate memory"], answer: 0 },
+  { question: "What is an orphan process?", options: ["A process with no parent", "A terminated process", "A process waiting for resources", "A process that causes deadlock"], answer: 0 },
+  { question: "What does the 'ready state' mean in process management?", options: ["The process is executing", "The process is waiting for I/O", "The process is ready to execute", "The process is terminated"], answer: 2 },
+  { question: "Which algorithm assigns priority to processes?", options: ["FCFS", "Priority Scheduling", "Round Robin", "SJF"], answer: 1 },
+  { question: "What is the main purpose of the kernel?", options: ["Managing hardware and software resources", "Running user applications", "Managing user interface", "Managing threads only"], answer: 0 },
+  { question: "What is context switching?", options: ["Switching between threads", "Saving and restoring process state", "Managing memory", "Executing processes"], answer: 1 },
+  { question: "What does multitasking allow?", options: ["Multiple programs to run simultaneously", "Only one program to run at a time", "Batch processing", "Hardware resource management"], answer: 0 },
+  { question: "What is a critical region?", options: ["A section of code that accesses shared resources", "A terminated process", "A memory block", "A CPU region"], answer: 0 },
+  { question: "What is the role of the scheduler?", options: ["To allocate CPU to processes", "To manage files", "To store user data", "To allocate memory"], answer: 0 },
+  { question: "Which algorithm is used for disk scheduling?", options: ["Round Robin", "SJF", "FCFS", "SCAN"], answer: 3 },
+  { question: "What is the function of an operating system in device management?", options: ["To control user access", "To manage hardware devices", "To allocate virtual memory", "To store data"], answer: 1 },
+  { question: "What does the term 'booting' refer to?", options: ["Restarting the OS", "Loading the OS into memory", "Shutting down the OS", "Compiling code"], answer: 1 },
+  { question: "What is fragmentation in memory management?", options: ["Unused memory space", "Corrupted memory", "Swapping pages", "Shared memory"], answer: 0 },
+  { question: "What is the purpose of a ready queue?", options: ["To hold processes waiting for I/O", "To hold processes ready to execute", "To terminate processes", "To manage virtual memory"], answer: 1 },
+  { question: "Which algorithm minimizes page faults?", options: ["LRU", "FIFO", "Optimal", "Round Robin"], answer: 2 },
+  { question: "What is a job queue?", options: ["A list of processes waiting for I/O", "A list of all processes in the system", "A queue of terminated processes", "A queue of ready processes"], answer: 1 },
+  { question: "What does mutual exclusion ensure?", options: ["Multiple processes access shared resources simultaneously", "Only one process accesses shared resources at a time", "Processes wait indefinitely", "Memory fragmentation is avoided"], answer: 1 },
+  { question: "What is the main function of system software?", options: ["To interact with hardware", "To execute user programs", "To manage user input", "To allocate threads"], answer: 0 },
+  { question: "What is starvation in scheduling?", options: ["A process that runs indefinitely", "A process that waits too long due to low priority", "A terminated process", "A process with high priority"], answer: 1 },
+  { question: "What is a race condition?", options: ["A state where two processes access shared data simultaneously", "A terminated process", "A memory allocation error", "A scheduling delay"], answer: 0 },
+  { question: "Which algorithm is used for shortest job first scheduling?", options: ["SJF", "FCFS", "Round Robin", "Priority Scheduling"], answer: 0 },
+  { question: "What does I/O stand for?", options: ["Input/Output", "Interrupt Operation", "Inside/Outside", "Instruction Overhead"], answer: 0 },
+  { question: "What is the main purpose of a device queue?", options: ["To store processes waiting for I/O", "To allocate memory", "To manage CPU usage", "To terminate processes"], answer: 0 }
+    ];
+
+    const selectedQuestions = [];
+    let currentQuestionIndex = 0;
+    const selectedAnswers = new Array(30).fill(null);
+    const timerElement = document.getElementById("timer");
+    let timerInterval;
+
+    // Randomly select 30 questions
+    function selectRandomQuestions() {
+      const shuffled = allQuestions.sort(() => 0.5 - Math.random());
+      selectedQuestions.push(...shuffled.slice(0, 30));
+    }
+
+    // Render the current question
+    function renderQuestion(index) {
+      const questionElement = document.getElementById("question");
+      const optionsElement = document.getElementById("options");
+      const currentQuestion = selectedQuestions[index];
+
+      questionElement.textContent = `Q${index + 1}: ${currentQuestion.question}`;
+      optionsElement.innerHTML = "";
+
+      currentQuestion.options.forEach((option, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <label>
+            <input type="radio" name="option" value="${i}" ${selectedAnswers[index] === i ? "checked" : ""}>
+            ${option}
+          </label>`;
+        optionsElement.appendChild(li);
+      });
+
+      updateButtons();
+    }
+
+    // Render question navigation
+    function renderNavigation() {
+      const navElement = document.getElementById("questionNav");
+      navElement.innerHTML = "";
+
+      selectedQuestions.forEach((_, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = i + 1;
+        btn.classList.toggle("answered", selectedAnswers[i] !== null);
+        btn.addEventListener("click", () => {
+          saveAnswer();
+          currentQuestionIndex = i;
+          renderQuestion(currentQuestionIndex);
+        });
+        navElement.appendChild(btn);
+      });
+    }
+
+    // Save selected answer
+    function saveAnswer() {
+      const selectedOption = document.querySelector("input[name='option']:checked");
+      selectedAnswers[currentQuestionIndex] = selectedOption ? parseInt(selectedOption.value) : null;
+      saveQuizData();
+    }
+
+    // Save quiz data to local storage
+    function saveQuizData() {
+      const quizData = selectedQuestions.map((q, i) => ({
+        question: q.question,
+        options: q.options,
+        selected: selectedAnswers[i],
+        correct: q.answer,
+      }));
+      localStorage.setItem("quizData", JSON.stringify(quizData));
+    }
+
+    // Calculate the quiz score
+    function calculateScore() {
+      return selectedQuestions.reduce((score, q, i) => {
+        return score + (selectedAnswers[i] === q.answer ? 1 : 0);
+      }, 0);
+    }
+
+    // Submit the quiz
+    function submitQuiz() {
+      saveAnswer();
+      clearInterval(timerInterval); // Stop the timer
+      showModal(); // Show the completion modal
+      const score = calculateScore();
+      localStorage.setItem("quizScore", score); // Save score
+    }
+
+    // Timer functionality
+    function startTimer(duration) {
+      let timer = duration;
+      timerInterval = setInterval(() => {
+        const minutes = Math.floor(timer / 60);
+        const seconds = timer % 60;
+
+        timerElement.textContent = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+
+        if (--timer < 0) {
+          clearInterval(timerInterval);
+          submitQuiz(); // Auto-submit on timeout
+        }
+      }, 1000);
+    }
+
+    // Show modal
+    function showModal() {
+      document.getElementById("modalOverlay").style.display = "block";
+      document.getElementById("quizModal").style.display = "block";
+    }
+
+    // Hide modal
+    function hideModal() {
+      document.getElementById("modalOverlay").style.display = "none";
+      document.getElementById("quizModal").style.display = "none";
+    }
+
+    // Update button visibility
+    function updateButtons() {
+        const prevButton = document.getElementById("prev");
+      const nextButton = document.getElementById("next");
+      const submitButton = document.getElementById("submit");
+
+      prevButton.style.display = currentQuestionIndex === 0 ? "none" : "inline-block";
+      nextButton.style.display = currentQuestionIndex === selectedQuestions.length - 1 ? "none" : "inline-block";
+      submitButton.style.display = currentQuestionIndex === selectedQuestions.length - 1 ? "inline-block" : "none";
+    }
+
+    // Event listeners for navigation buttons
+    document.getElementById("next").addEventListener("click", () => {
+      saveAnswer();
+      currentQuestionIndex++;
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+    });
+
+    document.getElementById("prev").addEventListener("click", () => {
+      saveAnswer();
+      currentQuestionIndex--;
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+    });
+
+    document.getElementById("submit").addEventListener("click", submitQuiz);
+
+    document.getElementById("viewScoreButton").addEventListener("click", () => {
+  window.location.href = "score.html"; // Redirect to score.html
+});
+    // Initialize the quiz
+    function initQuiz() {
+      selectRandomQuestions();
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+      startTimer(25 * 60); // Start a 25-minute timer
+    }
+
+    // Initialize quiz on page load
+    window.onload = initQuiz;
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoungeQuizzing</title>
+  <style>
+    /* General Styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #D2E2DF;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      color: #4D605E;
+      font-size: 2rem;
+    }
+
+    .quiz-container {
+      background-color: #EEFAF8;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .timer {
+      text-align: right;
+      font-size: 1.2rem;
+      color: red;
+      margin-bottom: 10px;
+    }
+
+    .question {
+      margin: 15px 0;
+    }
+
+    .options {
+      list-style: none;
+      padding: 0;
+    }
+
+    .options li {
+      margin: 10px 0;
+    }
+
+    .options input[type="radio"] {
+      margin-right: 10px;
+    }
+
+    /* Buttons */
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .prev-btn {
+      background-color: #D2E2DF;
+      color: #333;
+      display: none;
+    }
+
+    .next-btn {
+      background-color: #006400;
+      color: #fff;
+    }
+
+    .submit-btn {
+      background-color: #4D605E;
+      color: #fff;
+      display: none;
+    }
+
+    /* Question Navigation */
+    .question-navigation {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+      gap: 5px;
+      margin-top: 20px;
+    }
+
+    .question-navigation button {
+      background-color: #D2E2DF;
+      color: #333;
+      border: 1px solid #4D605E;
+      font-size: 1rem;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
+    .question-navigation button.answered {
+      background-color: #4D605E;
+      color: #fff;
+    }
+
+    /* Media Queries for Responsiveness */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .quiz-container {
+        padding: 15px;
+      }
+
+      button {
+        font-size: 0.95rem;
+        padding: 10px 16px;
+      }
+
+      .timer {
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .quiz-container {
+        padding: 10px;
+      }
+
+      .timer {
+        font-size: 0.9rem;
+      }
+
+      button {
+        font-size: 0.9rem;
+        padding: 8px 14px;
+      }
+
+      .question-navigation button {
+        font-size: 0.9rem;
+        padding: 6px 8px;
+      }
+    }
+
+    /* Pop-Up Modal Styling */
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      text-align: center;
+      z-index: 1000;
+      display: none;
+    }
+
+    .modal h2 {
+      color: #4D605E;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+
+    .modal button {
+      background-color: #006400;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .modal button:hover {
+      background-color: #004d00;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>LoungeQuizzing</h1>
+  </header>
+  <div class="quiz-container">
+    <div class="timer" id="timer">25:00</div>
+    <div class="question" id="question">Question will appear here</div>
+    <ul class="options" id="options"></ul>
+
+    <div class="buttons">
+      <button class="prev-btn" id="prev">Previous</button>
+      <button class="next-btn" id="next">Next</button>
+      <button class="submit-btn" id="submit">Submit</button>
+    </div>
+
+    <div class="question-navigation" id="questionNav"></div>
+  </div>
+  <div class="modal-overlay" id="modalOverlay"></div>
+  <div class="modal" id="quizModal">
+    <h2>Quiz Completed</h2>
+    <button id="viewScoreButton">View Score</button>
+  </div>
+
+  <script>
+    // Initialize quiz data
+    const allQuestions = [
+  { question: "What is a computer?", options: ["An analog device for processing data", "An electronic device for manipulating data", "A mechanical device for computation", "A device for storing physical objects"], answer: 1 },
+  { question: "What are the two main components of a computer system?", options: ["Hardware and Firmware", "Input and Output", "Hardware and Software", "CPU and Memory"], answer: 2 },
+  { question: "Which of these is NOT a function of a computer?", options: ["Accepting data", "Processing data", "Analyzing physical objects", "Storing results"], answer: 2 },
+  { question: "What is the primary function of input devices?", options: ["Processing data", "Outputting results", "Storing information", "Accepting data"], answer: 3 },
+  { question: "What model is commonly associated with digital computers?", options: ["Babbage's Model", "Von Neumann Model", "Turing Model", "Boolean Model"], answer: 1 },
+  { question: "What are examples of hardware?", options: ["Programs and applications", "Monitor and keyboard", "Operating systems", "Firmware"], answer: 1 },
+  { question: "What is software?", options: ["Physical components of a computer", "A logical component made up of programs", "Input devices", "Output devices"], answer: 1 },
+  { question: "What are the two most popular types of personal computers?", options: ["PC and Linux", "PC and Apple Macintosh", "Macintosh and Unix", "PC and Solaris"], answer: 1 },
+  { question: "Which device is also known as a laptop?", options: ["Tablet PC", "Notebook computer", "Desktop computer", "Smartphone"], answer: 1 },
+  { question: "What distinguishes a handheld computer?", options: ["Its size fits in one hand", "Its advanced processing power", "Its high storage capacity", "Its multi-user capabilities"], answer: 0 },
+  { question: "What is a PDA primarily used for?", options: ["Running complex algorithms", "Providing personal organizer functions", "Executing multi-threaded applications", "Serving as a server"], answer: 1 },
+  { question: "What is a supercomputer?", options: ["A compact and portable computer", "The fastest and most powerful computer", "A computer used for word processing", "A computer for home use"], answer: 1 },
+  { question: "What is an embedded computer?", options: ["A general-purpose computer", "A computer integrated into a larger product", "A handheld device", "A computer used for gaming"], answer: 1 },
+  { question: "Which of these is an advantage of using computers?", options: ["Violation of privacy", "Speed", "Impact on labor force", "Health risks"], answer: 1 },
+  { question: "What is a network?", options: ["A standalone computer system", "A collection of interconnected devices", "A single computer with multiple users", "A computer without input devices"], answer: 1 },
+  { question: "What is the purpose of a server?", options: ["To access resources on the network", "To manage resources on the network", "To provide user interfaces", "To perform arithmetic operations"], answer: 1 },
+  { question: "What is the Web?", options: ["A hardware component", "A worldwide collection of interconnected networks", "A collection of related web pages", "A type of software"], answer: 2 },
+  { question: "Who designed the first programmable computing device?", options: ["Blaise Pascal", "Charles Babbage", "Gottfried Leibniz", "Ada Lovelace"], answer: 1 },
+  { question: "What is the main characteristic of first-generation computers?", options: ["Use of transistors", "Use of vacuum tubes", "Use of microprocessors", "Use of VLSI"], answer: 1 },
+  { question: "What replaced vacuum tubes in second-generation computers?", options: ["Microprocessors", "Integrated Circuits", "Transistors", "Semiconductors"], answer: 2 },
+  { question: "Which programming language was introduced during the second generation?", options: ["Python", "COBOL", "Java", "C#"], answer: 1 },
+  { question: "What is the main electronic component in third-generation computers?", options: ["Vacuum tubes", "Integrated Circuits (ICs)", "Transistors", "Microprocessors"], answer: 1 },
+  { question: "Which computer was the first to use functional parallelism?", options: ["IBM 360", "CDC 6600", "UNIVAC", "ENIAC"], answer: 1 },
+  { question: "What defines fourth-generation computers?", options: ["Use of transistors", "Use of VLSI and microprocessors", "Use of vacuum tubes", "Use of magnetic tape"], answer: 1 },
+  { question: "What is the primary feature of fifth-generation computers?", options: ["Use of assembly language", "Artificial intelligence and ULSI technology", "Large size and high power consumption", "Reliance on punched cards"], answer: 1 },
+  { question: "What are supercomputers primarily used for?", options: ["Word processing", "Complex mathematical calculations", "Storing small databases", "Personal use"], answer: 1 },
+  { question: "What distinguishes a mainframe computer?", options: ["Low storage capacity", "Multi-user and high performance", "Single-user capability", "Small size"], answer: 1 },
+  { question: "Which classification includes devices like thermometers and speedometers?", options: ["Digital Computers", "Analog Computers", "Hybrid Computers", "Supercomputers"], answer: 1 },
+  { question: "What is an example of a digital computer?", options: ["ECG Machine", "Thermometer", "Laptop", "Gasoline Station"], answer: 2 },
+  { question: "Which type of computer can function as both analog and digital?", options: ["Digital Computers", "Analog Computers", "Hybrid Computers", "Supercomputers"], answer: 2 },
+  { question: "What does AI stand for?", options: ["Advanced Interface", "Artificial Intelligence", "Automatic Integration", "Analog Interaction"], answer: 1 },
+  { question: "Which was the first general-purpose programmable electronic computer?", options: ["ENIAC", "UNIVAC", "IBM 360", "CDC 6600"], answer: 0 },
+  { question: "What type of memory replaced magnetic drums in second-generation computers?", options: ["Magnetic core memory", "Semiconductor memory", "Optical memory", "Flash memory"], answer: 0 },
+  { question: "Which computer was the first to use punched cards for data tabulation?", options: ["ENIAC", "IBM 360", "Hollerith's machine", "UNIVAC"], answer: 2 },
+  { question: "What is the main purpose of machine language?", options: ["High-level programming", "Low-level binary instructions for computers", "Graphical user interfaces", "Analog signal processing"], answer: 1 },
+  { question: "Which language uses abbreviated words like ADD, SUB, and DIV?", options: ["Machine Language", "Assembly Language", "COBOL", "FORTRAN"], answer: 1 },
+  { question: "What is the function of a microprocessor?", options: ["A storage device", "The CPU and other circuits on a single chip", "A type of memory", "An input device"], answer: 1 },
+  { question: "Which programming language was developed by Dennis Ritchie?", options: ["COBOL", "Java", "Python", "C"], answer: 3 },
+  { question: "What is the primary function of the CPU?", options: ["Store data", "Execute instructions", "Manage networks", "Control input devices"], answer: 1 },
+  { question: "What does CPU stand for?", options: ["Central Programming Unit", "Central Processing Unit", "Core Programming Unit", "Central Peripheral Unit"], answer: 1 },
+  { question: "What are the three main parts of a CPU?", options: ["ALU, Control Unit, Registers", "Input, Output, Storage", "Memory, Storage, Network", "Arithmetic, Logic, Memory"], answer: 0 },
+  { question: "What is the function of the ALU in a CPU?", options: ["Perform arithmetic and logic operations", "Store data", "Control input devices", "Execute software applications"], answer: 0 },
+  { question: "What is the primary function of the control unit in a CPU?", options: ["Perform calculations", "Interpret and execute instructions", "Store data", "Manage networks"], answer: 1 },
+  { question: "What is the full form of RAM?", options: ["Random Access Memory", "Read-Only Memory", "Rapid Access Module", "Real Application Memory"], answer: 0 },
+  { question: "Which memory is non-volatile?", options: ["RAM", "ROM", "Cache", "Register"], answer: 1 },
+  { question: "What is the purpose of secondary storage?", options: ["Temporary data storage", "Permanent data storage", "Executing instructions", "Processing data"], answer: 1 },
+  { question: "Which of the following is an example of an input device?", options: ["Printer", "Scanner", "Monitor", "Speaker"], answer: 1 },
+  { question: "Which of the following is an example of an output device?", options: ["Keyboard", "Mouse", "Monitor", "Scanner"], answer: 2 },
+  { question: "What is the function of an operating system?", options: ["Manage hardware and software resources", "Store data", "Execute high-level programming languages", "Control networks"], answer: 0 },
+  { question: "Which of the following is a type of application software?", options: ["Compiler", "Spreadsheet", "Device driver", "Kernel"], answer: 1 },
+  { question: "What does GUI stand for?", options: ["Graphical User Interface", "General User Interaction", "Global Utility Integration", "Graphical Utility Input"], answer: 0 },
+  { question: "What is an example of a graphical user interface?", options: ["Command Prompt", "MS-DOS", "Windows Desktop", "UNIX Shell"], answer: 2 },
+  { question: "Which type of computer language is directly understood by the CPU?", options: ["Assembly Language", "Machine Language", "High-Level Language", "Scripting Language"], answer: 1 },
+  { question: "Which of these is a high-level programming language?", options: ["Assembly", "FORTRAN", "Machine Language", "Binary"], answer: 1 },
+  { question: "What is the purpose of a compiler?", options: ["Convert high-level code to machine code", "Execute machine code", "Store programs", "Manage memory"], answer: 0 },
+  { question: "What is an interpreter?", options: ["A device for inputting data", "A program that converts code line by line", "A type of operating system", "A memory management tool"], answer: 1 },
+  { question: "Which device is considered the 'brain' of the computer?", options: ["Hard Drive", "CPU", "RAM", "Motherboard"], answer: 1 },
+  { question: "What is the function of a motherboard?", options: ["Provide storage", "Connect all components of a computer", "Manage input devices", "Execute software"], answer: 1 },
+  { question: "What is the smallest unit of data in a computer?", options: ["Byte", "Bit", "Word", "Nibble"], answer: 1 },
+  { question: "How many bits are in a byte?", options: ["4", "8", "16", "32"], answer: 1 },
+  { question: "What is the function of cache memory?", options: ["Provide high-speed data storage for frequently used data", "Store permanent data", "Control input devices", "Manage network traffic"], answer: 0 },
+  { question: "Which of these is a portable storage device?", options: ["Hard Drive", "Flash Drive", "Motherboard", "CPU"], answer: 1 },
+  { question: "What does USB stand for?", options: ["Universal Storage Bus", "Universal Serial Bus", "Universal System Bus", "Universal Software Bus"], answer: 1 },
+  { question: "What is the main function of a hard drive?", options: ["Temporary storage", "Permanent data storage", "Control unit operations", "Input device management"], answer: 1 },
+  { question: "What does HTTP stand for?", options: ["HyperText Transfer Protocol", "HyperText Transfer Program", "Hyper Transfer Text Protocol", "Hyper Text Transport Process"], answer: 0 },
+  { question: "Which of these is an example of an open-source operating system?", options: ["Windows", "Linux", "MacOS", "iOS"], answer: 1 },
+  { question: "What is the purpose of a firewall?", options: ["Store data", "Manage CPU usage", "Protect against unauthorized access", "Increase internet speed"], answer: 2 },
+  { question: "What does IP stand for in networking?", options: ["Internet Protocol", "Internal Process", "Input Protocol", "Integrated Processing"], answer: 0 },
+  { question: "Which of these is an example of system software?", options: ["MS Word", "Google Chrome", "Linux Kernel", "Photoshop"], answer: 2 },
+  { question: "What is a network topology?", options: ["The physical layout of a network", "A type of programming language", "An input device", "A software design"], answer: 0 },
+  { question: "Which topology connects all devices to a central hub?", options: ["Bus", "Star", "Ring", "Mesh"], answer: 1 },
+  { question: "What is the main advantage of a ring topology?", options: ["Simple to set up", "High fault tolerance", "Efficient data transfer", "No collisions"], answer: 3 },
+  { question: "What is the purpose of an IP address?", options: ["Identify devices on a network", "Store user data", "Execute programs", "Manage memory"], answer: 0 },
+  { question: "What is cloud computing?", options: ["Using physical storage", "Using network resources remotely", "Using CPU cycles", "Managing operating systems"], answer: 1 },
+  { question: "Which protocol is used for email transmission?", options: ["HTTP", "SMTP", "FTP", "DNS"], answer: 1 },
+  { question: "What is a domain name?", options: ["An IP address", "A human-readable web address", "A type of software", "A file storage format"], answer: 1 },
+  { question: "What is the purpose of a DNS server?", options: ["Store data", "Translate domain names to IP addresses", "Manage firewalls", "Execute code"], answer: 1 },
+  { question: "What does GUI enable users to do?", options: ["Use text commands", "Interact with the computer using graphical elements", "Write assembly language programs", "Manage hardware directly"], answer: 1 },
+  { question: "Which type of software includes MS Word?", options: ["System Software", "Application Software", "Utility Software", "Compiler"], answer: 1 },
+  { question: "What is the main function of antivirus software?", options: ["Speed up computer operations", "Detect and remove malware", "Optimize memory usage", "Manage hardware"], answer: 1 },
+  { question: "What does BIOS stand for?", options: ["Basic Input Output System", "Binary Input Output System", "Basic Integrated Operating System", "Basic Internal Output System"], answer: 0 },
+  { question: "Which of these is a primary storage device?", options: ["RAM", "Hard Drive", "DVD", "Flash Drive"], answer: 0 },
+  { question: "What is an example of secondary storage?", options: ["Cache", "RAM", "Hard Disk", "Registers"], answer: 2 },
+  { question: "What does ASCII stand for?", options: ["American Standard Code for Information Interchange", "Automated System for Code Interactions", "Advanced Software Code Interpreter", "American System Code Integration"], answer: 0 },
+  { question: "Which language is used for AI development?", options: ["HTML", "Python", "Assembly", "COBOL"], answer: 1 },
+  { question: "What is the binary representation of the decimal number 10?", options: ["1010", "1001", "1110", "1100"], answer: 0 },
+  { question: "What does the term 'bit' refer to?", options: ["Binary Digit", "Binary Integer", "Basic Instruction", "Basic Information"], answer: 0 },
+  { question: "What is the purpose of a compiler?", options: ["Translate high-level code into machine code", "Execute machine code", "Optimize memory usage", "Store user data"], answer: 0 },
+  { question: "What is a hybrid computer?", options: ["A mix of digital and analog computers", "A computer for gaming", "A computer for business applications", "A portable computer"], answer: 0 }
+    ];
+
+    const selectedQuestions = [];
+    let currentQuestionIndex = 0;
+    const selectedAnswers = new Array(30).fill(null);
+    const timerElement = document.getElementById("timer");
+    let timerInterval;
+
+    // Randomly select 30 questions
+    function selectRandomQuestions() {
+      const shuffled = allQuestions.sort(() => 0.5 - Math.random());
+      selectedQuestions.push(...shuffled.slice(0, 30));
+    }
+
+    // Render the current question
+    function renderQuestion(index) {
+      const questionElement = document.getElementById("question");
+      const optionsElement = document.getElementById("options");
+      const currentQuestion = selectedQuestions[index];
+
+      questionElement.textContent = `Q${index + 1}: ${currentQuestion.question}`;
+      optionsElement.innerHTML = "";
+
+      currentQuestion.options.forEach((option, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <label>
+            <input type="radio" name="option" value="${i}" ${selectedAnswers[index] === i ? "checked" : ""}>
+            ${option}
+          </label>`;
+        optionsElement.appendChild(li);
+      });
+
+      updateButtons();
+    }
+
+    // Render question navigation
+    function renderNavigation() {
+      const navElement = document.getElementById("questionNav");
+      navElement.innerHTML = "";
+
+      selectedQuestions.forEach((_, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = i + 1;
+        btn.classList.toggle("answered", selectedAnswers[i] !== null);
+        btn.addEventListener("click", () => {
+          saveAnswer();
+          currentQuestionIndex = i;
+          renderQuestion(currentQuestionIndex);
+        });
+        navElement.appendChild(btn);
+      });
+    }
+
+    // Save selected answer
+    function saveAnswer() {
+      const selectedOption = document.querySelector("input[name='option']:checked");
+      selectedAnswers[currentQuestionIndex] = selectedOption ? parseInt(selectedOption.value) : null;
+      saveQuizData();
+    }
+
+    // Save quiz data to local storage
+    function saveQuizData() {
+      const quizData = selectedQuestions.map((q, i) => ({
+        question: q.question,
+        options: q.options,
+        selected: selectedAnswers[i],
+        correct: q.answer,
+      }));
+      localStorage.setItem("quizData", JSON.stringify(quizData));
+    }
+
+    // Calculate the quiz score
+    function calculateScore() {
+      return selectedQuestions.reduce((score, q, i) => {
+        return score + (selectedAnswers[i] === q.answer ? 1 : 0);
+      }, 0);
+    }
+
+    // Submit the quiz
+    function submitQuiz() {
+      saveAnswer();
+      clearInterval(timerInterval); // Stop the timer
+      showModal(); // Show the completion modal
+      const score = calculateScore();
+      localStorage.setItem("quizScore", score); // Save score
+    }
+
+    // Timer functionality
+    function startTimer(duration) {
+      let timer = duration;
+      timerInterval = setInterval(() => {
+        const minutes = Math.floor(timer / 60);
+        const seconds = timer % 60;
+
+        timerElement.textContent = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+
+        if (--timer < 0) {
+          clearInterval(timerInterval);
+          submitQuiz(); // Auto-submit on timeout
+        }
+      }, 1000);
+    }
+
+    // Show modal
+    function showModal() {
+      document.getElementById("modalOverlay").style.display = "block";
+      document.getElementById("quizModal").style.display = "block";
+    }
+
+    // Hide modal
+    function hideModal() {
+      document.getElementById("modalOverlay").style.display = "none";
+      document.getElementById("quizModal").style.display = "none";
+    }
+
+    // Update button visibility
+    function updateButtons() {
+        const prevButton = document.getElementById("prev");
+      const nextButton = document.getElementById("next");
+      const submitButton = document.getElementById("submit");
+
+      prevButton.style.display = currentQuestionIndex === 0 ? "none" : "inline-block";
+      nextButton.style.display = currentQuestionIndex === selectedQuestions.length - 1 ? "none" : "inline-block";
+      submitButton.style.display = currentQuestionIndex === selectedQuestions.length - 1 ? "inline-block" : "none";
+    }
+
+    // Event listeners for navigation buttons
+    document.getElementById("next").addEventListener("click", () => {
+      saveAnswer();
+      currentQuestionIndex++;
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+    });
+
+    document.getElementById("prev").addEventListener("click", () => {
+      saveAnswer();
+      currentQuestionIndex--;
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+    });
+
+    document.getElementById("submit").addEventListener("click", submitQuiz);
+
+    document.getElementById("viewScoreButton").addEventListener("click", () => {
+  window.location.href = "score.html"; // Redirect to score.html
+});
+    // Initialize the quiz
+    function initQuiz() {
+      selectRandomQuestions();
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+      startTimer(25 * 60); // Start a 25-minute timer
+    }
+
+    // Initialize quiz on page load
+    window.onload = initQuiz;
+  </script>
+</body>
+
+</html>
+

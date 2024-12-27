@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rate Us</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #D2E2DF;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .rating-container {
+      text-align: center;
+      background: #EEFAF8;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .rating-container h1 {
+      margin-bottom: 20px;
+      color: #4D605E;
+    }
+
+    .stars {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .star {
+      font-size: 40px;
+      color: #ccc;
+      cursor: pointer;
+      transition: color 0.3s, transform 0.2s;
+    }
+
+    .star.selected,
+    .star:hover {
+      color: #ffcc00;
+      transform: scale(1.2);
+    }
+
+    button {
+      background-color: #028f1e;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+
+    button:disabled {
+      background-color: #bfbfbf;
+      cursor: not-allowed;
+    }
+
+    button:hover:not(:disabled) {
+      background-color: #026b17;
+    }
+
+    /* Pop-up styling */
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #D2E2DF;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      z-index: 1000;
+    }
+
+    .popup h2 {
+      margin-bottom: 20px;
+      color: #4D605E;
+    }
+
+    .popup button {
+      background-color: #4D605E;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .popup button:hover {
+      background-color: #3A4D4B;
+    }
+
+    /* Background overlay for pop-up */
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+  <div class="rating-container">
+    <h1>Rate Us</h1>
+    <form id="rating-form">
+      <div class="stars" role="radiogroup" aria-label="Star rating">
+        <span class="star" data-value="1" role="radio" aria-checked="false" tabindex="0">★</span>
+        <span class="star" data-value="2" role="radio" aria-checked="false" tabindex="0">★</span>
+        <span class="star" data-value="3" role="radio" aria-checked="false" tabindex="0">★</span>
+        <span class="star" data-value="4" role="radio" aria-checked="false" tabindex="0">★</span>
+        <span class="star" data-value="5" role="radio" aria-checked="false" tabindex="0">★</span>
+      </div>
+      <input type="hidden" id="rating-value" name="rating" value="0">
+      <button type="submit" id="submit-button" disabled>Submit</button>
+    </form>
+  </div>
+
+  <!-- Pop-up Message -->
+  <div class="overlay"></div>
+  <div class="popup">
+    <h2 id="popup-message">Thank you for your rating!</h2>
+    <button id="popup-close">OK</button>
+  </div>
+
+  <script>
+    const stars = document.querySelectorAll(".star");
+    const ratingInput = document.getElementById("rating-value");
+    const form = document.getElementById("rating-form");
+    const submitButton = document.getElementById("submit-button");
+
+    const popup = document.querySelector(".popup");
+    const overlay = document.querySelector(".overlay");
+    const popupClose = document.getElementById("popup-close");
+    const popupMessage = document.getElementById("popup-message");
+
+    let selectedRating = localStorage.getItem("rating") || 0;
+
+    // Highlight previously selected rating if available
+    if (selectedRating > 0) {
+      highlightStars(selectedRating);
+      ratingInput.value = selectedRating;
+      submitButton.disabled = false;
+    }
+
+    // Handle star hover and selection
+    stars.forEach(star => {
+      star.addEventListener("mouseover", () => {
+        const value = star.getAttribute("data-value");
+        highlightStars(value);
+      });
+
+      star.addEventListener("mouseout", () => {
+        highlightStars(selectedRating); // Revert to selected rating
+      });
+
+      star.addEventListener("click", () => {
+        selectedRating = star.getAttribute("data-value");
+        ratingInput.value = selectedRating; // Update hidden input
+        localStorage.setItem("rating", selectedRating); // Save to local storage
+        submitButton.disabled = false;
+      });
+
+      star.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          star.click();
+        }
+      });
+    });
+
+    // Highlight stars up to a specific value
+    function highlightStars(value) {
+      stars.forEach(star => {
+        if (star.getAttribute("data-value") <= value) {
+          star.classList.add("selected");
+          star.setAttribute("aria-checked", "true");
+        } else {
+          star.classList.remove("selected");
+          star.setAttribute("aria-checked", "false");
+        }
+      });
+    }
+
+    // Submit the form via Formspree
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      try {
+        const response = await fetch("https://formspree.io/f/mzzbqbdr", {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            rating: selectedRating,
+          }),
+        });
+
+        if (response.ok) {
+          showPopup("Thank you for your rating!");
+          form.reset();
+          highlightStars(0); // Reset stars
+          localStorage.removeItem("rating"); // Clear saved rating
+          submitButton.disabled = true;
+        } else {
+          showPopup("Failed to submit rating. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        showPopup("An error occurred. Please try again.");
+      }
+    });
+
+    // Show popup message
+    function showPopup(message) {
+      popupMessage.textContent = message;
+      popup.style.display = "block";
+      overlay.style.display = "block";
+    }
+
+    // Close popup
+    popupClose.addEventListener("click", () => {
+      popup.style.display = "none";
+      overlay.style.display = "none";
+    });
+  </script>
+</body>
+</html>

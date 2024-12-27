@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Syllabus</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #D2E2DF;
+    }
+
+    .header {
+      background-color: #4D605E;
+      color: white;
+      padding: 30px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .sub-header {
+      text-align: center;
+      color: #757575;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      border-radius: 20px;
+      background-color: #EEFAF8;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin: 30px auto;
+      width: 80%;
+      max-width: 600px;
+    }
+
+    .course-list {
+      list-style: none;
+      padding: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .course-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #D2E2DF;
+      border-radius: 25px;
+      padding: 15px 30px;
+      cursor: pointer;
+      text-decoration: none;
+      color: #4D605E;
+      font-weight: bold;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      font-size: 18px;
+      text-align: center;
+    }
+
+    /* CSC (green) */
+    .course-item.csc {
+      background-color: #D2E2DF;
+      color: #006400;
+    }
+
+    .course-item.csc:hover {
+      background-color: #B0C8C0;
+      transform: scale(1.05);
+    }
+
+    /* MTH (blue) */
+    .course-item.mth {
+      background-color: #D2E2DF;
+      color: #003366;
+    }
+
+    .course-item.mth:hover {
+      background-color: #B0C8C0;
+      transform: scale(1.05);
+    }
+
+    /* STT (red) */
+    .course-item.stt {
+      background-color: #D2E2DF;
+      color: #8B0000;
+    }
+
+    .course-item.stt:hover {
+      background-color: #B0C8C0;
+      transform: scale(1.05);
+    }
+
+    .footer {
+      margin: 20px auto;
+      display: block;
+      padding: 12px 30px;
+      width: 120px;
+      text-align: center;
+      background-color: #4D605E;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-decoration: none;
+    }
+
+    .footer:hover {
+      background-color: #3E5049;
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .header {
+        font-size: 20px;
+        padding: 20px;
+      }
+
+      .sub-header {
+        font-size: 14px;
+      }
+
+      .button-container {
+        flex-direction: column;
+        padding: 20px;
+        width: 90%;
+      }
+
+      .course-item {
+        font-size: 16px;
+        padding: 12px 25px;
+      }
+
+      .footer {
+        width: auto;
+        padding: 10px 25px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header {
+        font-size: 18px;
+        padding: 15px;
+      }
+
+      .sub-header {
+        font-size: 12px;
+      }
+
+      .button-container {
+        padding: 15px;
+        width: 100%;
+      }
+
+      .course-item {
+        font-size: 14px;
+        padding: 10px 20px;
+      }
+
+      .footer {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="header">Know Your Course Syllabus</div>
+  <div class="sub-header">Select Your Level</div>
+  <div class="button-container">
+    <ul class="course-list">
+      <li><a href="csc1.html" class="course-item csc">CSC 100 Level</a></li>
+      <li><a href="csc2.html" class="course-item csc">CSC 200 Level</a></li>
+      <li><a href="csc3.html" class="course-item csc">CSC 300 Level</a></li>
+      <li><a href="mth1.html" class="course-item mth">MTH 100 Level</a></li>
+      <li><a href="mth2.html" class="course-item mth">MTH 200 Level</a></li>
+      <li><a href="mth3.html" class="course-item mth">MTH 300 Level</a></li>
+      <li><a href="stt1.html" class="course-item stt">STT 100 Level</a></li>
+      <li><a href="stt2.html" class="course-item stt">STT 200 Level</a></li>
+      <li><a href="stt3.html" class="course-item stt">STT 300 Level</a></li>
+    </ul>
+  </div>
+  <a href="index.html" class="footer">Back</a>
+</body>
+</html>

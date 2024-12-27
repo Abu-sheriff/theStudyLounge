@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Page</title>
+  <style>
+/* General Styles */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #D2E2DF;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+/* Responsive Styles */
+@media (max-width: 1000px) {
+  .container {
+    width: 100%;
+    padding: 0 10px;
+  }
+
+  .sidebar {
+    width: 200px;
+  }
+
+  .content-wrapper.shift {
+    margin-left: 200px;
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .container {
+    width: 95%;
+    max-width: 1600px;
+  }
+
+  .sidebar {
+    width: 300px;
+  }
+
+  .content-wrapper.shift {
+    margin-left: 300px;
+    max-width: calc(100% - 300px);
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+}
+
+/* Header Styles */
+header {
+  flex-wrap: wrap;
+  gap: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #EEFAF8;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.menu-icon,
+.bell-icon {
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Sidebar Menu */
+.sidebar {
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(-250px);
+  position: fixed;
+  top: 0;
+  left: -250px;
+  width: 250px;
+  max-width: 80%;
+  height: 100%;
+  background-color: #4D605E;
+  color: white;
+  overflow-y: auto;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar.active {
+  transform: translateX(0);
+  left: 0;
+}
+
+.sidebar-header {
+  padding: 20px;
+  text-align: center;
+  border-bottom: 1px solid #fff;
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.menu-items {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-items li {
+  padding: 15px 20px;
+  border-bottom: 1px solid #fff;
+}
+
+.menu-items li a {
+  text-decoration: none;
+  color: white;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.menu-items li:hover {
+  background-color: #626263;
+}
+
+/* Activation Button */
+.activate-button {
+  margin-left: auto;
+  background-color: #4D605E;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.activate-button:hover {
+  opacity: 0.9;
+}
+
+/* Content Wrapper */
+.content-wrapper {
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.content-wrapper.shift {
+  margin-left: 250px;
+  max-width: calc(100% - 250px);
+}
+
+/* Section Styles */
+section {
+  padding: 20px 0;
+}
+
+.section-title {
+  margin-bottom: 10px;
+  font-weight: bold;
+  font-size: 1.2em;
+  color: #333;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background-color: #EEFAF8;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.card-title {
+  font-size: 1em;
+  font-weight: bold;
+}
+
+/* Footer Styles */
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: #D2E2DF;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+}
+
+.footer-item {
+  text-align: center;
+}
+
+.footer-icon {
+  font-size: 20px;
+  color: #028f1e;
+}
+
+.footer-label {
+  font-size: 12px;
+  color: #333;
+}
+
+/* Links */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="menu-icon" onclick="toggleMenu()">☰</div>
+    <div>Home</div>
+    <a href="" class="activate-button">Activated</a>
+<div class="user-badge">
+  <a href="notifications.html" class="notification-count">0</a>
+  <a href="notifications.html" class="bell-icon">🔔</a>
+</div>
+  </header>
+  <!-- Sidebar Menu -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>The Study Lounge</h3>
+    </div>
+    <ul class="menu-items">
+      <ul class="menu-items">
+  <li><a href="product_key.html"><span>🔑</span> Product Key</a></li>
+  <li><a href="forum.html"><span>📃</span> Threads</a></li>
+<li><a href="notifications.html"><span>🔔</span> Notifications</a></li>
+  <li><a href="setup.html"><span>👤</span> Update Profile</a></li>
+  <li><a href="feedback.html"><span>📝</span> Feedback</a></li>
+  <li><a href="saved_results.html"><span>💾</span> Saved Results</a></li>
+  <li><a href="analyser.html"><span>📊</span> Analyze Performance</a></li>
+  <li><a href="reminder.html"><span>⏰</span> Reminder Settings</a></li>
+  <li><a href="about.html"><span>📓</span> About Us</a></li>
+  <li><a href="https://chat.whatsapp.com/FBVC10mBhEjBokFD1yVaCM"><span>☎️</span> Contact Us</a></li>
+  <li><a href="rate_us.html"><span>⭐</span> Rate Us</a></li>
+</ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content-wrapper" id="content">
+    <div class="container">
+       <section>
+  <div class="section-title">Learn</div>
+  <div class="card-grid">
+    <a href="tutorials.html" class="card">
+      <div class="card-icon">🔳</div>
+      <div class="card-title">Online Tutorials</div>
+    </a>
+    <a href="QuizLounging.html" class="card">
+      <div class="card-icon">💻</div>
+      <div class="card-title">Partake Quizzes</div>
+    </a>
+  </div>
+</section>
+<section>
+  <div class="section-title">Study Materials</div>
+  <div class="card-grid">
+    <a href="lecture_notes.html" class="card">
+      <div class="card-icon">📚</div>
+      <div class="card-title">Lecture Notes</div>
+    </a>
+    <a href="summaries.html" class="card">
+      <div class="card-icon">📖</div>
+      <div class="card-title">Summaries</div>
+    </a>
+    <a href="handouts.html" class="card">
+      <div class="card-icon">📘</div>
+      <div class="card-title">Handouts/PQ's</div>
+    </a>
+    <a href="syllabus.html" class="card">
+      <div class="card-icon">📋</div>
+      <div class="card-title">Syllabus</div>
+    </a>
+    <a href="ebooks.html" class="card">
+      <div class="card-icon">📱</div>
+      <div class="card-title">E-book</div>
+    </a>
+    <a href="" class="card">
+      <div class="card-icon">🏆</div>
+      <div class="card-title">Join Hackathons</div>
+    </a>
+  </div>
+</section>
+    </div>
+  </div>
+
+  <!-- Footer -->
+<footer>
+  <a href="main.html" class="footer-item">
+    <div class="footer-icon">🏠</div>
+    <div class="footer-label">Home</div>
+  </a>
+  <a href="forum.html" class="footer-item">
+    <div class="footer-icon">👥</div>
+    <div class="footer-label">Threads</div>
+  </a>
+  <a href="profile.html" class="footer-item">
+    <div class="footer-icon">👤</div>
+    <div class="footer-label">Profile</div>
+  </a>
+</footer>
+
+  <script>
+  function toggleMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const content = document.getElementById('content');
+    sidebar.classList.toggle('active');
+    content.classList.toggle('shift');
+
+    // Add or remove the overlay functionality
+    if (sidebar.classList.contains('active')) {
+      document.addEventListener('click', closeMenuOnOutsideClick);
+    } else {
+      document.removeEventListener('click', closeMenuOnOutsideClick);
+    }
+  }
+
+  function closeMenuOnOutsideClick(event) {
+    const sidebar = document.getElementById('sidebar');
+    const menuIcon = document.querySelector('.menu-icon');
+
+    // Close the menu if the clicked element is not the sidebar or the menu icon
+    if (!sidebar.contains(event.target) && !menuIcon.contains(event.target)) {
+      sidebar.classList.remove('active');
+      document.getElementById('content').classList.remove('shift');
+      document.removeEventListener('click', closeMenuOnOutsideClick);
+    }
+    
+  }
+</script>
+</body>
+</html>

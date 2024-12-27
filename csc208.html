@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoungeQuizzing</title>
+  <style>
+    /* General Styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #D2E2DF;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      color: #4D605E;
+      font-size: 2rem;
+    }
+
+    .quiz-container {
+      background-color: #EEFAF8;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .timer {
+      text-align: right;
+      font-size: 1.2rem;
+      color: red;
+      margin-bottom: 10px;
+    }
+
+    .question {
+      margin: 15px 0;
+    }
+
+    .options {
+      list-style: none;
+      padding: 0;
+    }
+
+    .options li {
+      margin: 10px 0;
+    }
+
+    .options input[type="radio"] {
+      margin-right: 10px;
+    }
+
+    /* Buttons */
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .prev-btn {
+      background-color: #D2E2DF;
+      color: #333;
+      display: none;
+    }
+
+    .next-btn {
+      background-color: #006400;
+      color: #fff;
+    }
+
+    .submit-btn {
+      background-color: #4D605E;
+      color: #fff;
+      display: none;
+    }
+
+    /* Question Navigation */
+    .question-navigation {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+      gap: 5px;
+      margin-top: 20px;
+    }
+
+    .question-navigation button {
+      background-color: #D2E2DF;
+      color: #333;
+      border: 1px solid #4D605E;
+      font-size: 1rem;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
+    .question-navigation button.answered {
+      background-color: #4D605E;
+      color: #fff;
+    }
+
+    /* Media Queries for Responsiveness */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .quiz-container {
+        padding: 15px;
+      }
+
+      button {
+        font-size: 0.95rem;
+        padding: 10px 16px;
+      }
+
+      .timer {
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .quiz-container {
+        padding: 10px;
+      }
+
+      .timer {
+        font-size: 0.9rem;
+      }
+
+      button {
+        font-size: 0.9rem;
+        padding: 8px 14px;
+      }
+
+      .question-navigation button {
+        font-size: 0.9rem;
+        padding: 6px 8px;
+      }
+    }
+
+    /* Pop-Up Modal Styling */
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      text-align: center;
+      z-index: 1000;
+      display: none;
+    }
+
+    .modal h2 {
+      color: #4D605E;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+
+    .modal button {
+      background-color: #006400;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .modal button:hover {
+      background-color: #004d00;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>LoungeQuizzing</h1>
+  </header>
+  <div class="quiz-container">
+    <div class="timer" id="timer">25:00</div>
+    <div class="question" id="question">Question will appear here</div>
+    <ul class="options" id="options"></ul>
+
+    <div class="buttons">
+      <button class="prev-btn" id="prev">Previous</button>
+      <button class="next-btn" id="next">Next</button>
+      <button class="submit-btn" id="submit">Submit</button>
+    </div>
+
+    <div class="question-navigation" id="questionNav"></div>
+  </div>
+  <div class="modal-overlay" id="modalOverlay"></div>
+  <div class="modal" id="quizModal">
+    <h2>Quiz Completed</h2>
+    <button id="viewScoreButton">View Score</button>
+  </div>
+
+  <script>
+    // Initialize quiz data
+    const allQuestions = [
+  { question: "What is a computer circuit?", options: ["A logical device", "A complete path for electron flow", "A hardware switch", "An arithmetic unit"], answer: 1 },
+  { question: "What are the basic building blocks of computer circuits?", options: ["Registers", "Logic gates", "Memory cells", "Control units"], answer: 1 },
+  { question: "Which of the following are the two possible states in binary circuits?", options: ["0 and 1", "High and Medium", "ON and OFF", "Both A and C"], answer: 3 },
+  { question: "What determines the output of a logic gate?", options: ["The voltage level", "The mix of inputs", "The transistor type", "The operating frequency"], answer: 1 },
+  { question: "What is the main purpose of logic gates?", options: ["To execute arithmetic operations", "To amplify signals", "To execute logical operations", "To manage memory"], answer: 2 },
+  { question: "What does Boolean algebra represent in electrical circuits?", options: ["Power levels", "Logic levels", "Signal delays", "Analog inputs"], answer: 1 },
+  { question: "In Boolean algebra, what does logic 1 represent?", options: ["Open switch", "Low voltage", "High voltage", "Device off"], answer: 2 },
+  { question: "What is the purpose of a truth table?", options: ["To store data", "To list all input-output combinations", "To display logic gate symbols", "To show circuit connections"], answer: 1 },
+  { question: "Which logic gate outputs 1 only when all inputs are 1?", options: ["OR", "NOT", "AND", "NOR"], answer: 2 },
+  { question: "What is the Boolean equation for an AND gate with inputs A and B?", options: ["Y = A + B", "Y = A.B", "Y = A'B", "Y = A XOR B"], answer: 1 },
+  { question: "Which gate outputs 1 if at least one input is 1?", options: ["AND", "OR", "NAND", "XNOR"], answer: 1 },
+  { question: "What is the function of a NOT gate?", options: ["Invert the input", "Add two inputs", "Compare inputs", "Multiply inputs"], answer: 0 },
+  { question: "What is the Boolean expression for a NAND gate?", options: ["Y = A'B", "Y = (A.B)'", "Y = A XOR B", "Y = A + B"], answer: 1 },
+  { question: "Which gate is known as the universal gate?", options: ["OR", "NOR", "NAND", "XOR"], answer: 2 },
+  { question: "What does an XOR gate output when both inputs are high?", options: ["High", "Low", "Equal", "Undefined"], answer: 1 },
+  { question: "What is the Boolean equation for an XOR gate with inputs A and B?", options: ["Y = A'B + AB'", "Y = A.B", "Y = A + B", "Y = A'B'"], answer: 0 },
+  { question: "Which logic gate outputs 1 only when both inputs are identical?", options: ["XOR", "AND", "XNOR", "NOR"], answer: 2 },
+  { question: "What is the output of an XNOR gate when both inputs are 0?", options: ["High", "Low", "Undefined", "Equal"], answer: 0 },
+  { question: "Which fabrication process involves printing circuits on ceramic substrates?", options: ["Monolithic", "Thin-film", "Thick-film", "Hybrid"], answer: 2 },
+  { question: "Which fabrication method is most economical for mass production?", options: ["Monolithic", "Thin-film", "Thick-film", "Hybrid"], answer: 0 },
+  { question: "What does IC stand for?", options: ["Internal Circuit", "Integrated Chip", "Integrated Circuit", "Insulated Chip"], answer: 2 },
+  { question: "What is the purpose of a diode array?", options: ["To amplify signals", "To allow current in one direction", "To switch states", "To create visual effects"], answer: 1 },
+  { question: "What does ROM stand for?", options: ["Random Output Memory", "Read-Only Memory", "Resettable Output Memory", "Read-Optimized Module"], answer: 1 },
+  { question: "Which type of memory is volatile?", options: ["RAM", "ROM", "EPROM", "EEPROM"], answer: 0 },
+  { question: "What is the function of virtual memory?", options: ["Increase physical memory", "Provide large address space", "Store binary codes", "Reduce latency"], answer: 1 },
+  { question: "What is the resolution of a data converter?", options: ["Input speed", "Minimum change in input voltage", "Signal range", "Maximum output level"], answer: 1 },
+  { question: "What does an operational amplifier (op-amp) do?", options: ["Logical operations", "Linear and non-linear operations", "Switching tasks", "Digital conversion"], answer: 1 },
+  { question: "Which terminal of an op-amp inverts the input signal?", options: ["Non-inverting terminal", "Input terminal", "Output terminal", "Inverting terminal"], answer: 3 },
+  { question: "What is the purpose of the common mode rejection ratio (CMRR) in an op-amp?", options: ["Reduce noise", "Increase voltage", "Stabilize frequency", "Increase gain"], answer: 0 },
+  { question: "Which fabrication method uses thin films of conducting material?", options: ["Thick-film", "Hybrid", "Monolithic", "Thin-film"], answer: 3 },
+  { question: "Which type of memory stores non-volatile data permanently?", options: ["SRAM", "ROM", "Cache", "DRAM"], answer: 1 },
+  { question: "What is the function of a NAND gate?", options: ["Invert input", "Output 0 if all inputs are 1", "Output 1 if all inputs are high", "Output based on XOR logic"], answer: 1 },
+  { question: "What are the two main types of data converters?", options: ["Analog and digital", "Binary and non-binary", "A/D and D/A converters", "Logic and non-logic converters"], answer: 2 },
+  { question: "What does EEPROM stand for?", options: ["Erased Programmable ROM", "Electrically Erasable PROM", "Extended Programmable Memory", "Erasable Electronic Memory"], answer: 1 },
+  { question: "What is the speed unit of RAM performance?", options: ["GB", "GHz", "MHz", "Bytes"], answer: 2 },
+  { question: "What is the function of cache memory?", options: ["Store permanent data", "Increase access speed", "Manage I/O devices", "Provide backup storage"], answer: 1 },
+  { question: "What is the output of an OR gate if both inputs are 0?", options: ["0", "1", "Undefined", "Error"], answer: 0 },
+  { question: "What type of signal does an analog circuit process?", options: ["Binary signals", "Discrete signals", "Continuous signals", "Digital signals"], answer: 2 },
+  { question: "What is a monolithic IC composed of?", options: ["Thin films", "Single silicon chip", "Ceramic substrate", "Multiple layers"], answer: 1 },
+  { question: "What type of device is a light-emitting diode (LED)?", options: ["Amplifier", "Switch", "Optical", "Logic gate"], answer: 2 },
+  { question: "What are the inputs of an XNOR gate if the output is 1?", options: ["Both 1", "Both 0", "Different", "Both A and B"], answer: 3 },
+  { question: "Which memory type is faster but smaller in size?", options: ["DRAM", "Cache memory", "ROM", "EPROM"], answer: 1 },
+  { question: "Which of the following gates outputs 1 when both inputs are 0?", options: ["AND", "OR", "NOR", "NAND"], answer: 2 },
+  { question: "What is the primary function of a multiplexer?", options: ["Combining multiple inputs into one output", "Amplifying signals", "Splitting one input into multiple outputs", "Storing binary data"], answer: 0 },
+  { question: "Which type of circuit processes digital signals?", options: ["Analog circuit", "Digital circuit", "Mixed circuit", "Power circuit"], answer: 1 },
+  { question: "What does DRAM stand for?", options: ["Dynamic Random Access Memory", "Direct Read Access Memory", "Dual Random Access Memory", "Dynamic Read-Ahead Memory"], answer: 0 },
+  { question: "What is the full form of SRAM?", options: ["Sequential RAM", "Static RAM", "Systematic RAM", "Simple RAM"], answer: 1 },
+  { question: "What is the function of a decoder?", options: ["Convert binary input into specific output lines", "Combine multiple inputs", "Invert input signals", "Store memory addresses"], answer: 0 },
+  { question: "Which logic gate is a combination of AND and NOT?", options: ["NAND", "NOR", "XOR", "XNOR"], answer: 0 },
+  { question: "What is the output of a NOR gate when both inputs are 1?", options: ["0", "1", "Undefined", "Equal"], answer: 0 },
+  { question: "What is the main function of a flip-flop?", options: ["Perform arithmetic operations", "Store a single binary bit", "Invert input signals", "Amplify signals"], answer: 1 },
+  { question: "Which of the following memory types is non-volatile?", options: ["RAM", "SRAM", "ROM", "Cache"], answer: 2 },
+  { question: "What is the main disadvantage of DRAM?", options: ["It is volatile", "It is slow", "It is expensive", "It cannot be refreshed"], answer: 0 },
+  { question: "What is the purpose of a clock signal in digital circuits?", options: ["To synchronize operations", "To store binary data", "To amplify signals", "To perform calculations"], answer: 0 },
+  { question: "Which gate is known as an inverter?", options: ["AND", "OR", "NOT", "NAND"], answer: 2 },
+  { question: "What does a D flip-flop store?", options: ["Two binary bits", "A single binary bit", "An analog signal", "A clock signal"], answer: 1 },
+  { question: "Which memory is used for cache?", options: ["SRAM", "DRAM", "ROM", "EEPROM"], answer: 0 },
+  { question: "What is the output of a NAND gate when both inputs are 1?", options: ["0", "1", "Undefined", "Equal"], answer: 0 },
+  { question: "What is a sequential circuit?", options: ["A circuit without feedback", "A circuit with memory", "A combinational circuit", "A circuit with only gates"], answer: 1 },
+  { question: "Which component is used for binary addition?", options: ["Decoder", "Multiplexer", "Half adder", "Flip-flop"], answer: 2 },
+  { question: "What is the purpose of a full adder?", options: ["Add one binary digit", "Add two binary digits with carry", "Multiply binary numbers", "Invert signals"], answer: 1 },
+  { question: "What does an encoder do?", options: ["Converts specific input lines to binary output", "Combines signals", "Amplifies signals", "Stores addresses"], answer: 0 },
+  { question: "What is the function of a demultiplexer?", options: ["Combine multiple inputs", "Distribute one input into multiple outputs", "Invert binary signals", "Amplify digital signals"], answer: 1 },
+  { question: "What is the typical function of an operational amplifier in non-inverting mode?", options: ["Signal inversion", "Signal amplification", "Signal attenuation", "Signal switching"], answer: 1 },
+  { question: "Which gate is equivalent to a NOT gate followed by an AND gate?", options: ["NOR", "NAND", "AND", "XNOR"], answer: 1 },
+  { question: "What is the primary advantage of CMOS logic?", options: ["Low power consumption", "High speed", "Low cost", "Compact size"], answer: 0 },
+  { question: "What is the output of an OR gate when both inputs are 1?", options: ["0", "1", "Undefined", "Equal"], answer: 1 },
+  { question: "Which type of circuit uses feedback for its operation?", options: ["Combinational circuit", "Sequential circuit", "Analog circuit", "Power circuit"], answer: 1 },
+  { question: "What is the main function of an arithmetic logic unit (ALU)?", options: ["Store binary data", "Perform arithmetic and logical operations", "Manage memory", "Amplify signals"], answer: 1 },
+  { question: "Which gate is used to detect equality between two binary inputs?", options: ["AND", "OR", "XNOR", "XOR"], answer: 2 },
+  { question: "What does TTL stand for?", options: ["Transistor-Transistor Logic", "Transmission Timing Logic", "Total Transfer Logic", "Transistor Transfer Level"], answer: 0 },
+  { question: "What is the full form of CMOS?", options: ["Current Mode Output System", "Complementary Metal Oxide Semiconductor", "Combined Metal Oxide Switch", "Current Memory Output System"], answer: 1 },
+  { question: "What is the role of a multiplexer in communication systems?", options: ["Amplify signals", "Reduce data transmission time", "Convert analog to digital signals", "Store data"], answer: 1 },
+  { question: "What is the advantage of a synchronous counter over an asynchronous counter?", options: ["Lower power consumption", "Higher speed", "Smaller size", "Easier to implement"], answer: 1 },
+  { question: "What is a combinational circuit?", options: ["A circuit with memory", "A circuit without feedback", "A circuit with sequential elements", "A circuit with flip-flops"], answer: 1 },
+  { question: "What does a clock pulse do in sequential circuits?", options: ["Synchronizes the operation", "Adds binary digits", "Converts analog to digital", "Amplifies signals"], answer: 0 },
+  { question: "What is the function of a binary counter?", options: ["Add two binary digits", "Count binary pulses", "Amplify binary signals", "Store binary data"], answer: 1 },
+  { question: "What is a latch?", options: ["A memory element", "A combinational circuit", "A binary adder", "A signal inverter"], answer: 0 },
+  { question: "What does VLSI stand for?", options: ["Very Low Signal Integration", "Very Large Scale Integration", "Variable Logic System Interface", "Verified Logic System Integration"], answer: 1 },
+  { question: "What is the primary function of DRAM refresh?", options: ["Increase access speed", "Maintain stored data", "Convert analog signals", "Reduce power consumption"], answer: 1 },
+  { question: "What is the function of a clocked flip-flop?", options: ["Store multiple bits", "Store a single bit synchronously", "Invert signals", "Amplify inputs"], answer: 1 },
+  { question: "What does a half adder lack?", options: ["AND gate", "OR gate", "Carry input", "XOR gate"], answer: 2 },
+  { question: "What is the full form of PLA?", options: ["Programmable Logic Array", "Programmed Logical Addition", "Preloaded Logic Amplifier", "Programmable Linear Arithmetic"], answer: 0 },
+  { question: "What is the output of an AND gate when one input is 0?", options: ["0", "1", "Undefined", "Equal"], answer: 0 },
+  { question: "What is the primary function of a shift register?", options: ["Store and transfer data", "Invert signals", "Amplify binary data", "Perform logical operations"], answer: 0 },
+  { question: "What is a full subtractor used for?", options: ["Binary addition", "Binary subtraction with borrow", "Signal inversion", "Data storage"], answer: 1 },
+  { question: "Which of these devices converts analog signals to digital?", options: ["Decoder", "Encoder", "A/D Converter", "D/A Converter"], answer: 2 },
+  { question: "What is the purpose of a Schmitt trigger?", options: ["Signal amplification", "Noise elimination", "Voltage regulation", "Data storage"], answer: 1 },
+  { question: "Which circuit is used to detect the rising edge of a clock signal?", options: ["Latch", "Flip-flop", "Counter", "Schmitt trigger"], answer: 1 }
+    ];
+
+    const selectedQuestions = [];
+    let currentQuestionIndex = 0;
+    const selectedAnswers = new Array(30).fill(null);
+    const timerElement = document.getElementById("timer");
+    let timerInterval;
+
+    // Randomly select 30 questions
+    function selectRandomQuestions() {
+      const shuffled = allQuestions.sort(() => 0.5 - Math.random());
+      selectedQuestions.push(...shuffled.slice(0, 30));
+    }
+
+    // Render the current question
+    function renderQuestion(index) {
+      const questionElement = document.getElementById("question");
+      const optionsElement = document.getElementById("options");
+      const currentQuestion = selectedQuestions[index];
+
+      questionElement.textContent = `Q${index + 1}: ${currentQuestion.question}`;
+      optionsElement.innerHTML = "";
+
+      currentQuestion.options.forEach((option, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <label>
+            <input type="radio" name="option" value="${i}" ${selectedAnswers[index] === i ? "checked" : ""}>
+            ${option}
+          </label>`;
+        optionsElement.appendChild(li);
+      });
+
+      updateButtons();
+    }
+
+    // Render question navigation
+    function renderNavigation() {
+      const navElement = document.getElementById("questionNav");
+      navElement.innerHTML = "";
+
+      selectedQuestions.forEach((_, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = i + 1;
+        btn.classList.toggle("answered", selectedAnswers[i] !== null);
+        btn.addEventListener("click", () => {
+          saveAnswer();
+          currentQuestionIndex = i;
+          renderQuestion(currentQuestionIndex);
+        });
+        navElement.appendChild(btn);
+      });
+    }
+
+    // Save selected answer
+    function saveAnswer() {
+      const selectedOption = document.querySelector("input[name='option']:checked");
+      selectedAnswers[currentQuestionIndex] = selectedOption ? parseInt(selectedOption.value) : null;
+      saveQuizData();
+    }
+
+    // Save quiz data to local storage
+    function saveQuizData() {
+      const quizData = selectedQuestions.map((q, i) => ({
+        question: q.question,
+        options: q.options,
+        selected: selectedAnswers[i],
+        correct: q.answer,
+      }));
+      localStorage.setItem("quizData", JSON.stringify(quizData));
+    }
+
+    // Calculate the quiz score
+    function calculateScore() {
+      return selectedQuestions.reduce((score, q, i) => {
+        return score + (selectedAnswers[i] === q.answer ? 1 : 0);
+      }, 0);
+    }
+
+    // Submit the quiz
+    function submitQuiz() {
+      saveAnswer();
+      clearInterval(timerInterval); // Stop the timer
+      showModal(); // Show the completion modal
+      const score = calculateScore();
+      localStorage.setItem("quizScore", score); // Save score
+    }
+
+    // Timer functionality
+    function startTimer(duration) {
+      let timer = duration;
+      timerInterval = setInterval(() => {
+        const minutes = Math.floor(timer / 60);
+        const seconds = timer % 60;
+
+        timerElement.textContent = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+
+        if (--timer < 0) {
+          clearInterval(timerInterval);
+          submitQuiz(); // Auto-submit on timeout
+        }
+      }, 1000);
+    }
+
+    // Show modal
+    function showModal() {
+      document.getElementById("modalOverlay").style.display = "block";
+      document.getElementById("quizModal").style.display = "block";
+    }
+
+    // Hide modal
+    function hideModal() {
+      document.getElementById("modalOverlay").style.display = "none";
+      document.getElementById("quizModal").style.display = "none";
+    }
+
+    // Update button visibility
+    function updateButtons() {
+        const prevButton = document.getElementById("prev");
+      const nextButton = document.getElementById("next");
+      const submitButton = document.getElementById("submit");
+
+      prevButton.style.display = currentQuestionIndex === 0 ? "none" : "inline-block";
+      nextButton.style.display = currentQuestionIndex === selectedQuestions.length - 1 ? "none" : "inline-block";
+      submitButton.style.display = currentQuestionIndex === selectedQuestions.length - 1 ? "inline-block" : "none";
+    }
+
+    // Event listeners for navigation buttons
+    document.getElementById("next").addEventListener("click", () => {
+      saveAnswer();
+      currentQuestionIndex++;
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+    });
+
+    document.getElementById("prev").addEventListener("click", () => {
+      saveAnswer();
+      currentQuestionIndex--;
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+    });
+
+    document.getElementById("submit").addEventListener("click", submitQuiz);
+
+    document.getElementById("viewScoreButton").addEventListener("click", () => {
+  window.location.href = "score.html"; // Redirect to score.html
+});
+    // Initialize the quiz
+    function initQuiz() {
+      selectRandomQuestions();
+      renderQuestion(currentQuestionIndex);
+      renderNavigation();
+      startTimer(25 * 60); // Start a 25-minute timer
+    }
+
+    // Initialize quiz on page load
+    window.onload = initQuiz;
+  </script>
+</body>
+</html>
+
